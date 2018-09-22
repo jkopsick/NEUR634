@@ -1,5 +1,6 @@
 import moose
 import numpy as np
+from neuron import h
 
 # Create an object to store the simple hierarchy, and the compartment object soma -- must use characters around compartment name
 def createCompartment(directory,compname,length,radius,RM,CM,RA,Em):
@@ -80,4 +81,21 @@ def setCompParameters(compvector,comptype,RM,CM,RA,E_leak):
 	comp.Ra = RA*comp.length/X_area
 	comp.initVm = E_leak
 	comp.Em = E_leak
+
+def createNeuronPulse(compname,pulsename,duration,amplitude,delay):
+    pulsename = h.IClamp(compname)
+    pulsename.dur = duration
+    pulsename.amp = amplitude
+    pulsename.delay = delay
+    return pulsename
    
+def recordCompNeuron(location):
+    # Store the time and voltage in a vector
+    v_vec = h.Vector()
+    v_vec.record(location._ref_v)
+    return v_vec
+
+def recordTimeNeuron():
+    t_vec = h.Vector()
+    t_vec.record(h._ref_t)
+    return t_vec
