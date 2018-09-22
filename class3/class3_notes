@@ -1,0 +1,294 @@
+[jeffk@localhost ~]$ cd NEUR634/
+[jeffk@localhost NEUR634]$ ls
+ class2  'HW1 Paper Questions.docx'   tests.log
+[jeffk@localhost NEUR634]$ mkdir class3
+[jeffk@localhost NEUR634]$ ls
+ class2   class3  'HW1 Paper Questions.docx'   tests.log
+[jeffk@localhost NEUR634]$ cd class3
+[jeffk@localhost class3]$ ls
+[jeffk@localhost class3]$ python
+Python 2.7.14 (default, Mar 14 2018, 16:45:33) 
+[GCC 8.0.1 20180222 (Red Hat 8.0.1-0.16)] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import moose
+>>> import numpy as np
+>>> soma = moose.Compartment('soma')
+>>> moose.getFieldNames('destFinfo')
+Invalid class name.
+()
+>>> soma.getFieldNames('destFinfo')
+('parentMsg', 'setThis', 'getThis', 'setName', 'getName', 'getMe', 'getParent', 'getChildren', 'getPath', 'getClassName', 'setNumData', 'getNumData', 'setNumField', 'getNumField', 'getIdValue', 'getIndex', 'getFieldIndex', 'setTick', 'getTick', 'getDt', 'getValueFields', 'getSourceFields', 'getDestFields', 'getMsgOut', 'getMsgIn', 'getNeighbors', 'getMsgDests', 'getMsgDestFunctions', 'getIsA', 'setVm', 'getVm', 'setCm', 'getCm', 'setEm', 'getEm', 'getIm', 'setInject', 'getInject', 'setInitVm', 'getInitVm', 'setRm', 'getRm', 'setRa', 'getRa', 'setDiameter', 'getDiameter', 'setLength', 'getLength', 'setX0', 'getX0', 'setY0', 'getY0', 'setZ0', 'getZ0', 'setX', 'getX', 'setY', 'getY', 'setZ', 'getZ', 'injectMsg', 'randInject', 'injectMsg', 'cable', 'displace', 'setGeomAndElec', 'process', 'reinit', 'initProc', 'initReinit', 'handleChannel', 'handleRaxial', 'handleAxial')
+>>> out = moose.Neutral('/out')
+>>> vmtab = moose.Table('/out/somaVm')
+>>> mmoose.connect(vmtab, 'requestOut', soma, 'getVm')
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+NameError: name 'mmoose' is not defined
+>>> moose.connect(vmtab, 'requestOut', soma, 'getVm')
+<moose.SingleMsg: id=5, dataIndex=0, path=/Msgs[0]/singleMsg[0]>
+>>> moose.showfield(soma)
+
+[ /soma[0] ]
+Cm               = 1.0
+Em               = -0.06
+Im               = 0.0
+Ra               = 1.0
+Rm               = 1.0
+Vm               = -0.06
+className        = Compartment
+diameter         = 0.0
+dt               = 5e-05
+fieldIndex       = 0
+idValue          = 452
+index            = 0
+initVm           = -0.06
+inject           = 0.0
+length           = 0.0
+name             = soma
+numData          = 1
+numField         = 1
+path             = /soma[0]
+tick             = 4
+x                = 0.0
+x0               = 0.0
+y                = 0.0
+y0               = 0.0
+z                = 0.0
+z0               = 0.0
+>>> print soma.tick, soma.dt
+4 5e-05
+>>> moose.setClock(4,2e-5)
+>>> print soma.tick, soma.dt
+4 2e-05
+>>> vmtab.tick
+8
+>>> vmtab.dt
+0.0001
+>>> soma.initVm = 0
+>>> moose.reinit()
+>>> moose.showfield(soma)
+
+[ /soma[0] ]
+Cm               = 1.0
+Em               = -0.06
+Im               = 0.0
+Ra               = 1.0
+Rm               = 1.0
+Vm               = 0.0
+className        = Compartment
+diameter         = 0.0
+dt               = 2e-05
+fieldIndex       = 0
+idValue          = 452
+index            = 0
+initVm           = 0.0
+inject           = 0.0
+length           = 0.0
+name             = soma
+numData          = 1
+numField         = 1
+path             = /soma[0]
+tick             = 4
+x                = 0.0
+x0               = 0.0
+y                = 0.0
+y0               = 0.0
+z                = 0.0
+z0               = 0.0
+>>> soma.tick = 5
+>>> moose.showfield(soma)
+
+[ /soma[0] ]
+Cm               = 1.0
+Em               = -0.06
+Im               = 0.0
+Ra               = 1.0
+Rm               = 1.0
+Vm               = 0.0
+className        = Compartment
+diameter         = 0.0
+dt               = 6e-05
+fieldIndex       = 0
+idValue          = 452
+index            = 0
+initVm           = 0.0
+inject           = 0.0
+length           = 0.0
+name             = soma
+numData          = 1
+numField         = 1
+path             = /soma[0]
+tick             = 5
+x                = 0.0
+x0               = 0.0
+y                = 0.0
+y0               = 0.0
+z                = 0.0
+z0               = 0.0
+>>> moose.start(300e-3)
+>>> import pylab as p
+>>> t = p.linspace(0,300e-3, len(vmtab.vector))
+>>> t
+array([0.000e+00, 1.000e-04, 2.000e-04, ..., 2.998e-01, 2.999e-01,
+       3.000e-01])
+>>> p.plot(t,vmtab.vector)
+[<matplotlib.lines.Line2D object at 0x7f4d3e70b090>]
+>>> p.show()
+>>> moose.start(300e-3)
+>>> moose.start(300e-3)
+>>> t = p.linspace(0,900e-3, len(vmtab.vector))
+>>> p.plot(t,vmtab.vector)
+[<matplotlib.lines.Line2D object at 0x7f4d3ee639d0>]
+>>> p.show()
+
+
+
+
+exited bash to restart for the multi-compartmental modeling
+
+
+
+
+[jeffk@localhost ~]$ cd NEUR634/class3
+[jeffk@localhost class3]$ python
+Python 2.7.14 (default, Mar 14 2018, 16:45:33) 
+[GCC 8.0.1 20180222 (Red Hat 8.0.1-0.16)] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import moose
+>>> import numpy as np
+>>> neuron = moose.Neutral('/neuron')
+>>> soma = moose.Compartment('/neuron/soma')
+>>> dend = moose.Compartment('/neuron/dend')
+>>> somaL = 20e-6
+>>> somaD = 20e-6
+>>> 
+>>> 
+>>> dendL = 40e-6
+>>> dend = 8e-6
+>>> dend = moose.Compartment('/neuron/dend')
+>>> moose.le()
+Elements under /
+/Msgs
+/clock
+/classes
+/postmaster
+/neuron
+['/Msgs', '/clock', '/classes', '/postmaster', '/neuron']
+>>> dendD = 8e-6
+>>> somaRM = 2 * (1/100.)**2
+>>> somaCM = 0.01 * (1e-6*100**2)
+>>> def sa(len,dia):
+... np.i*dia*len
+  File "<stdin>", line 2
+    np.i*dia*len
+     ^
+IndentationError: expected an indented block
+>>> def sa(len,dia):
+...     np.i*dia*len
+... 
+>>> soma.Rm = somaRM/sa(somaL,somaD)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "<stdin>", line 2, in sa
+AttributeError: 'module' object has no attribute 'i'
+>>> def sa(len,dia):
+...     np.pi*dia*len
+... 
+>>> soma.Rm = somaRM/sa(somaL,somaD)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: unsupported operand type(s) for /: 'float' and 'NoneType'
+>>> soma.Rm = somaRM./sa(somaL,somaD)
+  File "<stdin>", line 1
+    soma.Rm = somaRM./sa(somaL,somaD)
+                     ^
+SyntaxError: invalid syntax
+>>> soma.Rm = somaRM/sa(somaL,somaD)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: unsupported operand type(s) for /: 'float' and 'NoneType'
+>>> soma.length
+0.0
+>>> soma.length = somaL
+>>> soma.length
+2e-05
+>>> soma.diameter = somaD
+>>> dend.diameter = dendD
+>>> dend.length = dendL
+>>> soma.Rm = somaRM/sa(somaL,somaD)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: unsupported operand type(s) for /: 'float' and 'NoneType'
+>>> soma.Rm = somaRM/sa(soma.length,soma.diameter)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: unsupported operand type(s) for /: 'float' and 'NoneType'
+>>> soma.Rm = somaRM/(sa(somaL,somaD))
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: unsupported operand type(s) for /: 'float' and 'NoneType'
+>>> def sa(len,dia):
+...     np.pi*len*dia
+...     return sa
+... 
+>>> soma.Rm = somaRM/sa(somaL,somaD)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: unsupported operand type(s) for /: 'float' and 'function'
+>>> soma.Rm = somaRM/(sa(somaL,somaD))
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: unsupported operand type(s) for /: 'float' and 'function'
+>>> def sa(len,dia):
+...     sa = np.pi*len*dia
+...     return sa
+... 
+>>> soma.Rm = somaRM/(sa(somaL,somaD))
+>>> soma.Cm = somaCM*sa(somaL,somaD)
+>>> dend.Rm = dendRM/(sa(dendL,dendD))
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+NameError: name 'dendRM' is not defined
+>>> dend.Rm = somaRM/(sa(dendL,dendD))
+>>> dend.Rm = somaCM*(sa(dendL,dendD))
+>>> dend.Rm = somaRM/(sa(dendL,dendD))
+>>> dend.Cm = somaCM*(sa(dendL,dendD))
+>>> moose.le('/neuron')
+Elements under /neuron[0]
+/neuron[0]/soma
+/neuron[0]/dend
+['/neuron[0]/soma', '/neuron[0]/dend']
+>>> moose.Compartment('/neuron/soma/spine')
+<moose.Compartment: id=455, dataIndex=0, path=/neuron[0]/soma[0]/spine[0]>
+>>> for comp in moose.wildcardFind('/model/#'):
+...             print co
+... 
+>>> for comp in moose.wildcardFind('/neuron/#'):
+...     print(comp.name)
+... 
+soma
+dend
+>>> for comp in moose.wildcardFind('/neuron/##'):
+...     print(comp.name)
+... 
+soma
+dend
+spine
+>>> for comp in moose.wildcardFind('/neuron/##'):
+...     print(comp.name, comp.Rm)
+... 
+('soma', 159154.94309189531)
+('dend', 198943.67886486914)
+('spine', 1.0)
+>>> for comp in moose.wildcardFind('/neuron/##[TYPE=COMPARTMENT]'):
+...     print(comp.name, comp.Rm, comp.path)
+... 
+>>> for comp in moose.wildcardFind('/neuron/#[TYPE=COMPARTMENT]'):
+...     print(comp.name, comp.Rm, comp.path)
+... 
+>>> for comp in moose.wildcardFind('/neuron/#[TYPE=COMPARTMENT]'):
+...     print comp.name, comp.Rm, comp.path
+
+>>> len(vmtab.vector)
+9001
+

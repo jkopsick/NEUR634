@@ -1,0 +1,60 @@
+# Open python in Fedora terminal
+
+python2
+
+# Import the moose and numpy libraries
+
+import moose
+import numpy as np
+
+# Create an object to store the simple hierarchy, and the compartment object soma
+
+neuron = moose.Neutral('/neuron')
+soma = moose.Compartment('/neuron/soma')
+
+# Define the total resistivity and capacitivity, length, diameter, and surface area of compartment in SI units
+
+RM = 1500 * (1/100.)**2 
+CM = 1.0 * (1e-6*100**2)
+len = 30e-6
+dia = 20e-6
+SA = np.pi*dia*len
+
+# Setting the resistance for the compartment
+
+soma.Rm = RM/SA
+soma.Cm = CM*SA
+
+# Set values for other necessary values for the experiment
+soma.initVm = -65e-3
+soma.Em = -65e-3
+soma.inject = 100e-9
+
+# Run the experiment
+
+moose.reinit()
+moose.start(0.3) # run this for 300ms
+
+# Check the value of the membrane potential after the experiment has finished
+soma.Vm
+
+# Create an object that will store the pulse generator and create values for the pulse
+
+pulse = moose.PulseGen('pulse')
+pulse.delay[0] = 50e-3
+pulse.width[0] = 100e-3
+pulse.level[0] = 1e-9
+pulse.delay[1] = 1e9
+
+# Create an object to store the connection between the pulse and the compartment
+m = moose.connect(pulse,'output',soma,'injectMsg')
+
+# Change the current injection value to zero so we can see the sole effect of the pulse
+soma.inject = 0
+
+# Run the experiment iteratively to see how Vm changes
+moose.reinit()
+moose.start(0.051)
+soma.Vm
+moose.start(0.051)
+soma.Vm

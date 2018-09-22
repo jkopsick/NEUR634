@@ -1,0 +1,313 @@
+[jeffk@localhost ~]$ cd NEUR634/class2/
+[jeffk@localhost class2]$ python2
+Python 2.7.14 (default, Mar 14 2018, 16:45:33) 
+[GCC 8.0.1 20180222 (Red Hat 8.0.1-0.16)] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import moose
+>>> help(moose)
+
+>>> dir(moose)
+['AdExIF', 'AdThreshIF', 'Adaptor', 'Annotator', 'Arith', 'BinomialRng', 'BufPool', 'CaConc', 'CaConcBase', 'ChanBase', 'ChemCompt', 'Cinfo', 'Clock', 'Compartment', 'CompartmentBase', 'CplxEnzBase', 'CubeMesh', 'CylMesh', 'DestField', 'DiagonalMsg', 'DifShell', 'DiffAmp', 'Dsolve', 'ElementField', 'Enz', 'EnzBase', 'ExIF', 'ExponentialRng', 'Finfo', 'Func', 'Function', 'GammaRng', 'GapJunction', 'GraupnerBrunel2012CaPlasticitySynHandler', 'Group', 'Gsolve', 'HHChannel', 'HHChannel2D', 'HHChannelBase', 'HHGate', 'HHGate2D', 'HSolve', 'INFINITE', 'IntFire', 'IntFireBase', 'Interpol', 'Interpol2D', 'IzhIF', 'IzhikevichNrn', 'Ksolve', 'LIF', 'Leakage', 'LookupField', 'MMenz', 'MYNODE', 'MarkovChannel', 'MarkovGslSolver', 'MarkovRateTable', 'MarkovSolver', 'MarkovSolverBase', 'MeshEntry', 'MgBlock', 'Msg', 'Mstring', 'NMDAChan', 'NUMCORES', 'NUMNODES', 'Nernst', 'NeuroMesh', 'Neuron', 'Neutral', 'NormalRng', 'OneToAllMsg', 'OneToOneDataIndexMsg', 'OneToOneMsg', 'PIDController', 'PoissonRng', 'Pool', 'PoolBase', 'PostMaster', 'PsdMesh', 'PulseGen', 'PyRun', 'QIF', 'RC', 'RandGenerator', 'RandSpike', 'Reac', 'ReacBase', 'SBML', 'STDPSynHandler', 'STDPSynapse', 'SeqSynHandler', 'Shell', 'SimpleSynHandler', 'SingleMsg', 'SparseMsg', 'Species', 'SpikeGen', 'SpikeStats', 'Spine', 'SpineMesh', 'Stats', 'SteadyState', 'StimulusTable', 'Stoich', 'Streamer', 'StringIO', 'SymCompartment', 'SynChan', 'SynHandlerBase', 'Synapse', 'Table', 'Table2', 'TableBase', 'TimeTable', 'UniformRng', 'VClamp', 'VERSION', 'Variable', 'VectorTable', 'ZombieBufPool', 'ZombieCaConc', 'ZombieCompartment', 'ZombieEnz', 'ZombieFunction', 'ZombieHHChannel', 'ZombieMMenz', 'ZombiePool', 'ZombieReac', '__builtins__', '__doc__', '__file__', '__name__', '__package__', '__path__', '__version__', '_moose', 'absolute_import', 'append_finfodocs', 'ce', 'chemUtil', 'closing', 'connect', 'copy', 'delete', 'division', 'doc', 'element', 'exists', 'finfotypes', 'genesis', 'getCwe', 'getField', 'getFieldDict', 'getFieldNames', 'getfielddoc', 'getmoosedoc', 'isRunning', 'known_types', 'le', 'listmsg', 'loadModel', 'melement', 'moose', 'mooseReadSBML', 'mooseWriteKkit', 'mooseWriteSBML', 'moose_test', 'mooseaddChemSolver', 'moosedeleteChemSolver', 'move', 'os', 'pager', 'platform', 'print_function', 'pwe', 'pydoc', 'quit', 'rand', 'reinit', 'seed', 'sequence_types', 'setClock', 'setCwe', 'showfield', 'showfields', 'showmsg', 'start', 'stop', 'syncDataHandler', 'test', 'testSched', 'toUnicode', 'useClock', 'vec', 'version', 'warnings', 'wildcardFind']
+>>> moose.le('/class')
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/usr/lib/python2.7/site-packages/moose/moose.py", line 155, in le
+    raise ValueError('no such element')
+ValueError: no such element
+>>> moose.le('/classes')
+Elements under /classes[0]
+/classes[0]/AdExIF
+/classes[0]/AdThreshIF
+/classes[0]/Adaptor
+/classes[0]/Annotator
+/classes[0]/Arith
+/classes[0]/BinomialRng
+/classes[0]/BufPool
+/classes[0]/CaConc
+/classes[0]/CaConcBase
+/classes[0]/ChanBase
+/classes[0]/ChemCompt
+/classes[0]/Cinfo
+/classes[0]/Clock
+/classes[0]/Compartment
+/classes[0]/CompartmentBase
+/classes[0]/CplxEnzBase
+/classes[0]/CubeMesh
+/classes[0]/CylMesh
+/classes[0]/DiagonalMsg
+/classes[0]/DifShell
+/classes[0]/DiffAmp
+/classes[0]/Dsolve
+/classes[0]/Enz
+/classes[0]/EnzBase
+/classes[0]/ExIF
+/classes[0]/ExponentialRng
+/classes[0]/Finfo
+/classes[0]/Func
+/classes[0]/Function
+/classes[0]/GammaRng
+/classes[0]/GapJunction
+/classes[0]/GraupnerBrunel2012CaPlasticitySynHandler
+/classes[0]/Group
+/classes[0]/Gsolve
+/classes[0]/HHChannel
+/classes[0]/HHChannel2D
+/classes[0]/HHChannelBase
+/classes[0]/HHGate
+/classes[0]/HHGate2D
+/classes[0]/HSolve
+/classes[0]/IntFire
+/classes[0]/IntFireBase
+/classes[0]/Interpol
+/classes[0]/Interpol2D
+/classes[0]/IzhIF
+/classes[0]/IzhikevichNrn
+/classes[0]/Ksolve
+/classes[0]/LIF
+/classes[0]/Leakage
+/classes[0]/MMenz
+/classes[0]/MarkovChannel
+/classes[0]/MarkovGslSolver
+/classes[0]/MarkovRateTable
+/classes[0]/MarkovSolver
+/classes[0]/MarkovSolverBase
+/classes[0]/MeshEntry
+/classes[0]/MgBlock
+/classes[0]/Msg
+/classes[0]/Mstring
+/classes[0]/NMDAChan
+/classes[0]/Nernst
+/classes[0]/NeuroMesh
+/classes[0]/Neuron
+/classes[0]/Neutral
+/classes[0]/NormalRng
+/classes[0]/OneToAllMsg
+/classes[0]/OneToOneDataIndexMsg
+/classes[0]/OneToOneMsg
+/classes[0]/PIDController
+/classes[0]/PoissonRng
+/classes[0]/Pool
+/classes[0]/PoolBase
+/classes[0]/PostMaster
+/classes[0]/PsdMesh
+/classes[0]/PulseGen
+/classes[0]/PyRun
+/classes[0]/QIF
+/classes[0]/RC
+/classes[0]/RandGenerator
+/classes[0]/RandSpike
+/classes[0]/Reac
+/classes[0]/ReacBase
+/classes[0]/STDPSynHandler
+/classes[0]/STDPSynapse
+/classes[0]/SeqSynHandler
+/classes[0]/Shell
+/classes[0]/SimpleSynHandler
+/classes[0]/SingleMsg
+/classes[0]/SparseMsg
+/classes[0]/Species
+/classes[0]/SpikeGen
+/classes[0]/SpikeStats
+/classes[0]/Spine
+/classes[0]/SpineMesh
+/classes[0]/Stats
+/classes[0]/SteadyState
+/classes[0]/StimulusTable
+/classes[0]/Stoich
+/classes[0]/Streamer
+/classes[0]/SymCompartment
+/classes[0]/SynChan
+/classes[0]/SynHandlerBase
+/classes[0]/Synapse
+/classes[0]/Table
+/classes[0]/Table2
+/classes[0]/TableBase
+/classes[0]/TimeTable
+/classes[0]/UniformRng
+/classes[0]/VClamp
+/classes[0]/Variable
+/classes[0]/VectorTable
+/classes[0]/ZombieBufPool
+/classes[0]/ZombieCaConc
+/classes[0]/ZombieCompartment
+/classes[0]/ZombieEnz
+/classes[0]/ZombieFunction
+/classes[0]/ZombieHHChannel
+/classes[0]/ZombieMMenz
+/classes[0]/ZombiePool
+/classes[0]/ZombieReac
+/classes[0]/testSched
+['/classes[0]/AdExIF', '/classes[0]/AdThreshIF', '/classes[0]/Adaptor', '/classes[0]/Annotator', '/classes[0]/Arith', '/classes[0]/BinomialRng', '/classes[0]/BufPool', '/classes[0]/CaConc', '/classes[0]/CaConcBase', '/classes[0]/ChanBase', '/classes[0]/ChemCompt', '/classes[0]/Cinfo', '/classes[0]/Clock', '/classes[0]/Compartment', '/classes[0]/CompartmentBase', '/classes[0]/CplxEnzBase', '/classes[0]/CubeMesh', '/classes[0]/CylMesh', '/classes[0]/DiagonalMsg', '/classes[0]/DifShell', '/classes[0]/DiffAmp', '/classes[0]/Dsolve', '/classes[0]/Enz', '/classes[0]/EnzBase', '/classes[0]/ExIF', '/classes[0]/ExponentialRng', '/classes[0]/Finfo', '/classes[0]/Func', '/classes[0]/Function', '/classes[0]/GammaRng', '/classes[0]/GapJunction', '/classes[0]/GraupnerBrunel2012CaPlasticitySynHandler', '/classes[0]/Group', '/classes[0]/Gsolve', '/classes[0]/HHChannel', '/classes[0]/HHChannel2D', '/classes[0]/HHChannelBase', '/classes[0]/HHGate', '/classes[0]/HHGate2D', '/classes[0]/HSolve', '/classes[0]/IntFire', '/classes[0]/IntFireBase', '/classes[0]/Interpol', '/classes[0]/Interpol2D', '/classes[0]/IzhIF', '/classes[0]/IzhikevichNrn', '/classes[0]/Ksolve', '/classes[0]/LIF', '/classes[0]/Leakage', '/classes[0]/MMenz', '/classes[0]/MarkovChannel', '/classes[0]/MarkovGslSolver', '/classes[0]/MarkovRateTable', '/classes[0]/MarkovSolver', '/classes[0]/MarkovSolverBase', '/classes[0]/MeshEntry', '/classes[0]/MgBlock', '/classes[0]/Msg', '/classes[0]/Mstring', '/classes[0]/NMDAChan', '/classes[0]/Nernst', '/classes[0]/NeuroMesh', '/classes[0]/Neuron', '/classes[0]/Neutral', '/classes[0]/NormalRng', '/classes[0]/OneToAllMsg', '/classes[0]/OneToOneDataIndexMsg', '/classes[0]/OneToOneMsg', '/classes[0]/PIDController', '/classes[0]/PoissonRng', '/classes[0]/Pool', '/classes[0]/PoolBase', '/classes[0]/PostMaster', '/classes[0]/PsdMesh', '/classes[0]/PulseGen', '/classes[0]/PyRun', '/classes[0]/QIF', '/classes[0]/RC', '/classes[0]/RandGenerator', '/classes[0]/RandSpike', '/classes[0]/Reac', '/classes[0]/ReacBase', '/classes[0]/STDPSynHandler', '/classes[0]/STDPSynapse', '/classes[0]/SeqSynHandler', '/classes[0]/Shell', '/classes[0]/SimpleSynHandler', '/classes[0]/SingleMsg', '/classes[0]/SparseMsg', '/classes[0]/Species', '/classes[0]/SpikeGen', '/classes[0]/SpikeStats', '/classes[0]/Spine', '/classes[0]/SpineMesh', '/classes[0]/Stats', '/classes[0]/SteadyState', '/classes[0]/StimulusTable', '/classes[0]/Stoich', '/classes[0]/Streamer', '/classes[0]/SymCompartment', '/classes[0]/SynChan', '/classes[0]/SynHandlerBase', '/classes[0]/Synapse', '/classes[0]/Table', '/classes[0]/Table2', '/classes[0]/TableBase', '/classes[0]/TimeTable', '/classes[0]/UniformRng', '/classes[0]/VClamp', '/classes[0]/Variable', '/classes[0]/VectorTable', '/classes[0]/ZombieBufPool', '/classes[0]/ZombieCaConc', '/classes[0]/ZombieCompartment', '/classes[0]/ZombieEnz', '/classes[0]/ZombieFunction', '/classes[0]/ZombieHHChannel', '/classes[0]/ZombieMMenz', '/classes[0]/ZombiePool', '/classes[0]/ZombieReac', '/classes[0]/testSched']
+>>> moose.doc('Compartment')
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/usr/lib/python2.7/site-packages/moose/moose.py", line 504, in doc
+    text += getmoosedoc(tokens, inherited=inherited)
+  File "/usr/lib/python2.7/site-packages/moose/moose.py", line 409, in getmoosedoc
+    class_element = _moose.element('/classes/%s' % (tokens[0]))
+NameError: global name '_moose' is not defined
+>>> moose.doc(Compartment)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+NameError: name 'Compartment' is not defined
+>>> moose.doc('Compartment')
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/usr/lib/python2.7/site-packages/moose/moose.py", line 504, in doc
+    text += getmoosedoc(tokens, inherited=inherited)
+  File "/usr/lib/python2.7/site-packages/moose/moose.py", line 409, in getmoosedoc
+    class_element = _moose.element('/classes/%s' % (tokens[0]))
+NameError: global name '_moose' is not defined
+>>> help(moose(Compartment))
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+NameError: name 'Compartment' is not defined
+>>> help(moose.Compartment)
+
+>>> moose.__version__
+'3.1.4'
+>>> help(moose.Compartment)
+
+>>> help(moose.Compartment)
+
+>>> moose.doc(moose.Compartment)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/usr/lib/python2.7/site-packages/moose/moose.py", line 504, in doc
+    text += getmoosedoc(tokens, inherited=inherited)
+  File "/usr/lib/python2.7/site-packages/moose/moose.py", line 409, in getmoosedoc
+    class_element = _moose.element('/classes/%s' % (tokens[0]))
+NameError: global name '_moose' is not defined
+>>> moose.le('/')
+Elements under /
+/Msgs
+/clock
+/classes
+/postmaster
+['/Msgs', '/clock', '/classes', '/postmaster']
+>>> moose.Compartment('soma')
+<moose.Compartment: id=452, dataIndex=0, path=/soma[0]>
+>>> Compartment.le()
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+NameError: name 'Compartment' is not defined
+>>> Compartment.le(/)
+  File "<stdin>", line 1
+    Compartment.le(/)
+                   ^
+SyntaxError: invalid syntax
+>>> moose.le('soma')
+Elements under /soma[0]
+[]
+>>> soma2 = moose.Compartment('soma2')
+>>> moose.le()
+Elements under /
+/Msgs
+/clock
+/classes
+/postmaster
+/soma
+/soma2
+['/Msgs', '/clock', '/classes', '/postmaster', '/soma', '/soma2']
+>>> dir()
+['__builtins__', '__doc__', '__name__', '__package__', 'moose', 'soma2']
+>>> soma = moose.Element('soma')
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+AttributeError: 'module' object has no attribute 'Element'
+>>> soma = moose.element('soma')
+>>> dir()
+['__builtins__', '__doc__', '__name__', '__package__', 'moose', 'soma', 'soma2']
+>>> neuron = moose.Neutral('/neuron')
+>>> soma = moose.Compartment('/neuron/soma')
+>>> dir()
+['__builtins__', '__doc__', '__name__', '__package__', 'moose', 'neuron', 'soma', 'soma2']
+>>> moose.le()
+Elements under /
+/Msgs
+/clock
+/classes
+/postmaster
+/soma
+/soma2
+/neuron
+['/Msgs', '/clock', '/classes', '/postmaster', '/soma', '/soma2', '/neuron']
+>>> soma
+<moose.Compartment: id=455, dataIndex=0, path=/neuron[0]/soma[0]>
+>>> soma1=moose.element('soma')
+>>> soma
+<moose.Compartment: id=455, dataIndex=0, path=/neuron[0]/soma[0]>
+>>> out=moose.Neutral('/out')
+>>> dend = moose.Compartment('/neuron/dend')
+>>> dend
+<moose.Compartment: id=457, dataIndex=0, path=/neuron[0]/dend[0]>
+>>> moose.le('/neuron')
+Elements under /neuron[0]
+/neuron[0]/soma
+/neuron[0]/dend
+['/neuron[0]/soma', '/neuron[0]/dend']
+>>> soma.path
+'/neuron[0]/soma[0]'
+>>> soma.name
+'soma'
+>>> moose.showfield('/neuron/soma')
+
+[ /neuron[0]/soma[0] ]
+Cm               = 1.0
+Em               = -0.06
+Im               = 0.0
+Ra               = 1.0
+Rm               = 1.0
+Vm               = -0.06
+className        = Compartment
+diameter         = 0.0
+dt               = 5e-05
+fieldIndex       = 0
+idValue          = 455
+index            = 0
+initVm           = -0.06
+inject           = 0.0
+length           = 0.0
+name             = soma
+numData          = 1
+numField         = 1
+path             = /neuron[0]/soma[0]
+tick             = 4
+x                = 0.0
+x0               = 0.0
+y                = 0.0
+y0               = 0.0
+z                = 0.0
+z0               = 0.0
+>>> soma.getFieldNames('valueFinfo')
+('this', 'name', 'me', 'parent', 'children', 'path', 'className', 'numData', 'numField', 'idValue', 'index', 'fieldIndex', 'tick', 'dt', 'valueFields', 'sourceFields', 'destFields', 'msgOut', 'msgIn', 'Vm', 'Cm', 'Em', 'Im', 'inject', 'initVm', 'Rm', 'Ra', 'diameter', 'length', 'x0', 'y0', 'z0', 'x', 'y', 'z')
+>>> print soma.dt, soma.Rm, soma.Cm, soma.Vm
+5e-05 1.0 1.0 -0.06
+>>> dir(soma)
+['__class__', '__delattr__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__le__', '__lt__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', 'cable', 'connect', 'displace', 'getChildren', 'getClassName', 'getCm', 'getDataIndex', 'getDestFields', 'getDiameter', 'getDt', 'getEm', 'getField', 'getFieldIndex', 'getFieldNames', 'getFieldType', 'getId', 'getIdValue', 'getIm', 'getIndex', 'getInitVm', 'getInject', 'getIsA', 'getLength', 'getLookupField', 'getMe', 'getMsgDestFunctions', 'getMsgDests', 'getMsgIn', 'getMsgOut', 'getName', 'getNeighbors', 'getNumData', 'getNumField', 'getParent', 'getPath', 'getRa', 'getRm', 'getSourceFields', 'getThis', 'getTick', 'getValueFields', 'getVm', 'getX', 'getX0', 'getY', 'getY0', 'getZ', 'getZ0', 'handleAxial', 'handleChannel', 'handleRaxial', 'initProc', 'initReinit', 'injectMsg', 'isA', 'msgDestFunctions', 'msgDests', 'neighbors', 'parentMsg', 'process', 'randInject', 'reinit', 'setCm', 'setDestField', 'setDiameter', 'setEm', 'setField', 'setGeomAndElec', 'setInitVm', 'setInject', 'setLength', 'setLookupField', 'setName', 'setNumData', 'setNumField', 'setRa', 'setRm', 'setThis', 'setTick', 'setVm', 'setX', 'setX0', 'setY', 'setY0', 'setZ', 'setZ0', 'vec']
+>>> soma.getFieldNames('destFinfo')
+('parentMsg', 'setThis', 'getThis', 'setName', 'getName', 'getMe', 'getParent', 'getChildren', 'getPath', 'getClassName', 'setNumData', 'getNumData', 'setNumField', 'getNumField', 'getIdValue', 'getIndex', 'getFieldIndex', 'setTick', 'getTick', 'getDt', 'getValueFields', 'getSourceFields', 'getDestFields', 'getMsgOut', 'getMsgIn', 'getNeighbors', 'getMsgDests', 'getMsgDestFunctions', 'getIsA', 'setVm', 'getVm', 'setCm', 'getCm', 'setEm', 'getEm', 'getIm', 'setInject', 'getInject', 'setInitVm', 'getInitVm', 'setRm', 'getRm', 'setRa', 'getRa', 'setDiameter', 'getDiameter', 'setLength', 'getLength', 'setX0', 'getX0', 'setY0', 'getY0', 'setZ0', 'getZ0', 'setX', 'getX', 'setY', 'getY', 'setZ', 'getZ', 'injectMsg', 'randInject', 'injectMsg', 'cable', 'displace', 'setGeomAndElec', 'process', 'reinit', 'initProc', 'initReinit', 'handleChannel', 'handleRaxial', 'handleAxial')
+>>> moose.ce('neuron')
+>>> moose.le()
+Elements under /neuron[0]
+/neuron[0]/soma
+/neuron[0]/dend
+['/neuron[0]/soma', '/neuron[0]/dend']
+>>> moose.pwe
+<function pwe at 0x7f7353586d70>
+>>> moose.pwe()
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/usr/lib/python2.7/site-packages/moose/moose.py", line 131, in pwe
+    pwe_ = _moose.getCwe()
+NameError: global name '_moose' is not defined
+>>> soma.getFieldNames('valueFinfo')
+('this', 'name', 'me', 'parent', 'children', 'path', 'className', 'numData', 'numField', 'idValue', 'index', 'fieldIndex', 'tick', 'dt', 'valueFields', 'sourceFields', 'destFields', 'msgOut', 'msgIn', 'Vm', 'Cm', 'Em', 'Im', 'inject', 'initVm', 'Rm', 'Ra', 'diameter', 'length', 'x0', 'y0', 'z0', 'x', 'y', 'z')
+>>> print soma.dt, soma.Rm, soma.Cm, soma.Vm
+5e-05 1.0 1.0 -0.06
+>>> soma.Cm=1e-9
+>>> soma.Rm=10e6
+>>> soma.initVm=-75e-3
+>>> soma.initVm
+-0.075
+
