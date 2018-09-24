@@ -16,15 +16,18 @@ pulse_dur = 15
 pulse_amp = 0.5
 pulse_delay = 25
 sim_dur = 100
+
 soma_L = 12.6157
 soma_D = 12.6157
-dend_L = 200
-dend_D = 1
-dend_nseg = 101
 soma_Ra = 2
 soma_gpas = 1e-3
+
+dend_L = 200
+dend_D = 1
 dend_Ra = 2
 dend_gpas = 1e-4
+
+dend_nseg = 101
 
 # Create a soma and dendrite
 soma = h.Section(name='soma')
@@ -51,9 +54,8 @@ dend.diam = dend_D
 
 # Store the middle segment of each compartment to use for the pulse and for
 # measurement in the experiment
-
 mid_soma = soma(0.5)
-mid_dend = soma(0.5)
+mid_dend = dend(0.5)
 
 # Inject current into the soma
 shock = u.createNeuronPulse(mid_soma,'shock',pulse_dur,pulse_amp,pulse_delay)

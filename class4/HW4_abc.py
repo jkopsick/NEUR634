@@ -38,6 +38,8 @@ gran_cell = moose.loadModel(swcfile,container2)
 # (p files already have this computed upon load if specified at top of pfile)
 u.setCompParameters(gran_cell,'Compartment',RM,CM,RA,Em)
 
+# Re-define the cell variables so that they just include compartments
+# (i.e. exclude spines)
 l2_cell = moose.wildcardFind('/l2_cell/#[TYPE=SymCompartment]')
 gran_cell = moose.wildcardFind('/gran_cell/#[TYPE=Compartment]')
 
