@@ -1,8 +1,9 @@
 import moose
 import numpy as np
+#from neuron import h
 
 # Create an object to store the simple hierarchy, and the compartment object soma -- must use characters around compartment name
-def createCompartment(directory,compname,length,radius,RM,CM,RA,Em):
+def createCompartment(directory,compname,length,radius,RM,CM,RA,initVm,Em):
     # Create a neutral directory for neuron and create a           compartment with the name defined by the user
     compname = moose.Compartment(directory.path + '/' + compname)
     # Define the x-sectional area, diameter, and surface area
@@ -22,31 +23,35 @@ def createCompartment(directory,compname,length,radius,RM,CM,RA,Em):
     #CM = 1.0 * (1e-6*100**2)
     # Setting the resistance and capacitance for the compartment
     # Set values for other necessary values for the experiment
-    compname.initVm = Em
+    compname.initVm = initVm
     compname.Em = Em
     return compname
 
 # Create the pulse that will be connected to the compartment
-def createPulse(compname,pulsename,duration,amplitude,delay):
+def createPulse(compname,pulsename,duration,amplitude,delay1,delay2):
     pulsename = moose.PulseGen('%s' % pulsename)
     # Define pulse duration, amplitude, and delay (if desired)
     pulsename.width[0] = duration
     pulsename.level[0] = amplitude
-    pulsename.delay[0] = delay
+    pulsename.delay[0] = delay1
+    pulsename.delay[1] = delay2
     # Connect the pulse with the compartment defined by user
     moose.connect(pulsename, 'output', compname, 'injectMsg')
     return pulsename
 
-def createDataTables(compname,data_hierarchy):
+def createDataTables(compname,data_hierarchy,pulsename):
     # Create a new path using string manipulation to be used in the creation
     # of a unique data table for each compartment
     comp_path = compname.path.split('/')[-1]
     comp_path = comp_path.strip(']')
     comp_path = comp_path.replace('[','')
-    # Create the unique table and connect this to the compartment
+    # Create the unique membrane potential table and connect this to the compartment
     Vmtab = moose.Table(data_hierarchy.path + '/' + comp_path + '_Vm')
     moose.connect(Vmtab, 'requestOut', compname, 'getVm')
-    return Vmtab
+    # Create the unique external current table and connect this to the compartment
+    current_tab = moose.Table(data_hierarchy.path + '/' + comp_path + '_Iex')
+    moose.connect(current_tab, 'requestOut', pulsename, 'getOutputValue')
+    return Vmtab, current_tab
 
 def discretize(modelLoc,numComps,length,radius,RM,CM,RA,Em):
     # Create an array of n compartments as designated by user
@@ -69,5 +74,31 @@ def discretize(modelLoc,numComps,length,radius,RM,CM,RA,Em):
         moose.connect(compArray[i],'axialOut',compArray[i+1],'handleAxial')
     return compArray
     
-    
-    
+def setCompParameters(compvector,comptype,RM,CM,RA,E_leak):
+    # Loop through all the compartments in the vector
+    for comp in moose.wildcardFind(compvector.path + '/' + '#[TYPE=' + comptype + ']'):
+    	SA = comp.length*comp.diameter
+	X_area = np.pi*comp.diameter*comp.diameter/4.0
+	comp.Rm = RM/SA
+	comp.Cm = CM*SA
+	comp.Ra = RA*comp.length/X_area
+	comp.initVm = E_leak
+	comp.Em = E_leak
+
+def createNeuronPulse(compname,pulsename,duration,amplitude,delay):
+    pulsename = h.IClamp(compname)
+    pulsename.dur = duration
+    pulsename.amp = amplitude
+    pulsename.delay = delay
+    return pulsename
+   
+def recordCompNeuron(location):
+    # Store the time and voltage in a vector
+    v_vec = h.Vector()
+    v_vec.record(location._ref_v)
+    return v_vec
+
+def recordTimeNeuron():
+    t_vec = h.Vector()
+    t_vec.record(h._ref_t)
+    return t_vec
