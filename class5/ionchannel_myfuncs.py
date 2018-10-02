@@ -4,6 +4,9 @@
 Created on Fri Sep 28 13:27:01 2018
 
 @author: jeffk
+
+This python file adapts ionchannel.py and uses the functions that I have
+created.
 """
 
 # ionchannel.py --- 
@@ -84,11 +87,14 @@ closing or opening.
 
 """
 
+# Import all libraries necessary to run the file
 import numpy as np
 import matplotlib.pyplot as plt
 import moose
 import util as u
 
+# Set the resting membrane potential to be used in creating the channels
+# and defining their biophysics
 EREST_ACT = -70e-3 #: Resting membrane potential
 
 
@@ -192,11 +198,10 @@ def create_k_proto():
     
 
 if __name__ == '__main__':
-    # Define the variables needed to create the model
+    # Define the variables needed to create the compartment and the channels
     squid_l = 50e-6
     squid_rad = 15e-6
     SA = np.pi*squid_l*2*squid_rad
-    print SA
     Em = EREST_ACT + 10.613e-3
     initVm = EREST_ACT
     RM = 1/(0.3e-3*1e4)
@@ -211,34 +216,30 @@ if __name__ == '__main__':
     neuron = moose.Neutral('/neuron')
     squid = u.createCompartment(neuron,'HHsquidswag',squid_l,squid_rad,RM,CM,
                                 RA,initVm,Em)
+    # Set the axial resistance to match the one in the ionchannel.py file
+    # and set the container to be used for channel creation
     squid.Ra = 1
-    moose.showfield(squid)
     container = squid.parent.path
     
     # Create the external current to be applied to the compartment
     squid_pulse = u.createPulse(squid, 'rollingWave', pulse_dur, pulse_amp,
                                pulse_delay1, pulse_delay2)
-    moose.showfield(squid_pulse)
-    # Create the data tables
+    
+    # Create the data tables necessary to run the model
     data = moose.Neutral('/data')
     squid_Vm, squid_current = u.createDataTables(squid,data,squid_pulse)
     
-    #: Here we create copies of the prototype channels
+    # Create copies of the prototype channels and connect them to the
+    # compartment
     nachan = moose.copy(create_na_proto(), container, 'na', 1)
-    
-    #: Gbar_Na = 120 mS/cm^2
-    nachan.Gbar = 120e-3 * SA * 1e4
+    nachan.Gbar = 120e-3 * SA * 1e4 # Gbar_Na = 120 mS/cm^2
     nachan.Ek = 115e-3 + EREST_ACT
     moose.connect(nachan, 'channel', squid, 'channel', 'OneToOne')
-    
-    #: Gbar_K = 36 mS/cm^2
     kchan = moose.copy(create_k_proto(), container, 'k', 1)
-    kchan.Gbar = 36e-3 * SA * 1e4
+    kchan.Gbar = 36e-3 * SA * 1e4 # Gbar_K = 36 mS/cm^2
     kchan.Ek = -12e-3 + EREST_ACT
     moose.connect(kchan, 'channel', squid, 'channel', 'OneToOne')
 
-    moose.showfield(nachan[0])
-    moose.showfield(kchan[0])
     # Plot the simulation
     simtime = 0.1
     simdt = 0.25e-5
@@ -246,40 +247,6 @@ if __name__ == '__main__':
     for i in range(10):
         moose.setClock(i, simdt)
     moose.setClock(8, plotdt)
-    ts = moose.element('/clock')
-    print('Elements on tick 0')
-    for e in ts.neighbors['proc0']:
-        print((' ->', e.path, e.dt))
-    print('Elements on tick 1')
-    for e in ts.neighbors['proc1']:
-        print((' ->', e.path))
-    print('Elements on tick 2')
-    for e in ts.neighbors['proc2']:
-        print((' ->', e.path, e.dt))
-    print('Elements on tick 3')
-    for e in ts.neighbors['proc3']:
-        print((' ->', e.path, e.dt))
-    print('Elements on tick 4')
-    for e in ts.neighbors['proc4']:
-        print((' ->', e.path, e.dt))
-    print('Elements on tick 5')
-    for e in ts.neighbors['proc5']:
-        print((' ->', e.path))
-    print('Elements on tick 6')
-    for e in ts.neighbors['proc6']:
-        print((' ->', e.path))
-    print('Elements on tick 7')
-    for e in ts.neighbors['proc7']:
-        print((' ->', e.path))
-    print('Elements on tick 8')
-    for e in ts.neighbors['proc8']:
-        print((' ->', e.path, e.dt))
-    print('Elements on tick 9')
-    for e in ts.neighbors['proc9']:
-        print((' ->', e.path))
-    print('Elements on tick 10')
-    for e in ts.neighbors['proc10']:
-        print((' ->', e.path))
     moose.reinit()
     moose.start(simtime)
     t = np.linspace(0, simtime, len(squid_Vm.vector))

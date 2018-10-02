@@ -204,7 +204,6 @@ def create_1comp_neuron(path, number=1):
     diameter = 30e-6
     length = 50e-6
     sarea = np.pi * diameter * length
-    print sarea
     xarea = np.pi * diameter * diameter / 4.0
     Em = EREST_ACT + 10.613e-3
     comps.Em = Em
@@ -225,8 +224,6 @@ def create_1comp_neuron(path, number=1):
     kchan.Gbar = 36e-3 * sarea * 1e4
     kchan.Ek = -12e-3 + EREST_ACT
     moose.connect(kchan, 'channel', comps, 'channel', 'OneToOne')
-    moose.showfield(nachan[0])
-    moose.showfield(kchan[0])
     return comps
 
 
@@ -240,14 +237,12 @@ def current_step_test(simtime, simdt, plotdt):
     """
     model = moose.Neutral('/model')
     comp = create_1comp_neuron('/model/neuron')
-    moose.showfield(comp[0])
     stim = moose.PulseGen('/model/stimulus')
     stim.delay[0] = 20e-3
     stim.level[0] = 1e-9
     stim.width[0] = 40e-3
     stim.delay[1] = 1e9
     moose.connect(stim, 'output', comp, 'injectMsg')
-    moose.showfield(stim)
     data = moose.Neutral('/data')
     current_tab = moose.Table('/data/current')
     moose.connect(current_tab, 'requestOut', stim, 'getOutputValue')
@@ -256,40 +251,6 @@ def current_step_test(simtime, simdt, plotdt):
     for i in range(10):
         moose.setClock(i, simdt)
     moose.setClock(8, plotdt)
-    ts = moose.element('/clock')
-    print('Elements on tick 0')
-    for e in ts.neighbors['proc0']:
-        print((' ->', e.path, e.dt))
-    print('Elements on tick 1')
-    for e in ts.neighbors['proc1']:
-        print((' ->', e.path))
-    print('Elements on tick 2')
-    for e in ts.neighbors['proc2']:
-        print((' ->', e.path, e.dt))
-    print('Elements on tick 3')
-    for e in ts.neighbors['proc3']:
-        print((' ->', e.path, e.dt))
-    print('Elements on tick 4')
-    for e in ts.neighbors['proc4']:
-        print((' ->', e.path, e.dt))
-    print('Elements on tick 5')
-    for e in ts.neighbors['proc5']:
-        print((' ->', e.path))
-    print('Elements on tick 6')
-    for e in ts.neighbors['proc6']:
-        print((' ->', e.path))
-    print('Elements on tick 7')
-    for e in ts.neighbors['proc7']:
-        print((' ->', e.path))
-    print('Elements on tick 8')
-    for e in ts.neighbors['proc8']:
-        print((' ->', e.path, e.dt))
-    print('Elements on tick 9')
-    for e in ts.neighbors['proc9']:
-        print((' ->', e.path))
-    print('Elements on tick 10')
-    for e in ts.neighbors['proc10']:
-        print((' ->', e.path))
     moose.reinit()
     moose.start(simtime)
     ts = np.linspace(0, simtime, len(vm_tab.vector))
