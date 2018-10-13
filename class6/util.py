@@ -1,5 +1,6 @@
 import moose
 import numpy as np
+from collections import namedtuple
 #from neuron import h
 
 # Create an object to store the simple hierarchy, and the compartment object soma -- must use characters around compartment name
@@ -39,6 +40,7 @@ def createPulse(compname,pulsename,duration,amplitude,delay1,delay2):
     moose.connect(pulsename, 'output', compname, 'injectMsg')
     return pulsename
 
+# Create data tables that will store the current and voltage associated with a compartment
 def createDataTables(compname,data_hierarchy,pulsename):
     # Create a new path using string manipulation to be used in the creation
     # of a unique data table for each compartment
@@ -53,6 +55,7 @@ def createDataTables(compname,data_hierarchy,pulsename):
     moose.connect(current_tab, 'requestOut', pulsename, 'getOutputValue')
     return Vmtab, current_tab
 
+# Function that will discretize a compartment into N many segments
 def discretize(modelLoc,numComps,length,radius,RM,CM,RA,Em):
     # Create an array of n compartments as designated by user
     compArray = moose.vec('%s/comp' % (modelLoc.path), n=numComps,
@@ -73,7 +76,8 @@ def discretize(modelLoc,numComps,length,radius,RM,CM,RA,Em):
     for i in range(len(compArray[0:-2])):
         moose.connect(compArray[i],'axialOut',compArray[i+1],'handleAxial')
     return compArray
-    
+
+# Function that will set the parameters for all compartments in a model neuron
 def setCompParameters(compvector,comptype,RM,CM,RA,E_leak):
     # Loop through all the compartments in the vector
     for comp in moose.wildcardFind(compvector.path + '/' + '#[TYPE=' + comptype + ']'):
@@ -85,24 +89,34 @@ def setCompParameters(compvector,comptype,RM,CM,RA,E_leak):
 	comp.initVm = E_leak
 	comp.Em = E_leak
 
+# Function that will create a pulse in NEURON
 def createNeuronPulse(compname,pulsename,duration,amplitude,delay):
     pulsename = h.IClamp(compname)
     pulsename.dur = duration
     pulsename.amp = amplitude
     pulsename.delay = delay
     return pulsename
-   
+
+# Function that will record the voltage for a compartment in NEURON
 def recordCompNeuron(location):
     # Store the time and voltage in a vector
     v_vec = h.Vector()
     v_vec.record(location._ref_v)
     return v_vec
 
+# Function that will record the time in a NEURON simulation
 def recordTimeNeuron():
     t_vec = h.Vector()
     t_vec.record(h._ref_t)
     return t_vec
 
+# These named tuples provide a template for creating the biophysics associated with a given
+# channel type
+AlphaBetaChanParams = namedtuple('AlphaBetaChannelParams',
+                         'A_rate A_B A_C A_Vhalf A_vslope B_rate B_B B_C B_vhalf B_vslope')
+ChannelSettings = namedtuple('ChannelSettings', 'Xpow Ypow Erev name Xparam Yparam')
+
+# Function that will create from the biophysics defined for a channel a MOOSE channel
 def createChanProto(libraryName, channelParams, rateParams):
     # Create a library to store the channel prototypes
     if not moose.exists(libraryName):
@@ -130,4 +144,47 @@ def createChanProto(libraryName, channelParams, rateParams):
     # is copied to a channel from the library    
     channel.tick = -1
     
-    return channel 
+    return channel
+
+# Function that will create channels using the createChanProto function and place them
+# in a MOOSE library, which will be utilized in adding channels to a particular compartment
+def createChanLib(libraryName, channelSet, rateParams):
+    # Create a library to store the channel prototypes
+    if not moose.exists(libraryName):
+        lib = moose.Neutral(libraryName)
+    else:
+        lib = moose.element(libraryName)
+
+    # Add all the channels to the MOOSE library
+    for params in channelSet.values():
+        chan = createChanProto(libraryName, params, rateParams)
+
+# Function that will create a multi-compartment model in MOOSE from a .p or .swc file
+def createMultiCompCell(file_name, container_name, library_name, comp_type, channelSet, condSet,
+                        rateParams, cell_RM = None, cell_CM = None, cell_RA = None, 
+                        cell_initVm = None, cell_Em = None):
+    # Create the channel types and store them in a library to be used by each compartment
+    # in the model
+    createChanLib(library_name, channelSet, rateParams)
+    # Load in the model in question
+    if file_name.endswith('.p'):
+        cell = moose.loadModel(file_name, container_name)
+        for comp in moose.wildcardFind(cell.path + '/' + '#[TYPE=' + comp_type + ']'):
+            for chan_name, cond in condSet.items():
+                SA = np.pi*comp.length*comp.diam
+                proto = moose.element(library_name.path + '/' + chan_name)
+                chan = moose.copy(proto, comp, chan_name)[0]
+                chan.Gbar = gbar*SA
+                m = moose.connect(chan, 'channel', comp, 'channel')
+    else:
+        cell = moose.loadModel(file_name, container_name)
+        for comp in moose.wildcardFind(cell.path + '/' + '#[TYPE=' + comp_type + ']'):
+            setCompParameters(comp, 'SymCompartment', cell_RM, cell_CM, cell_RA, cell_initVm)
+        for comp in moose.wildcardFind(cell.path + '/' + '#[TYPE=' + comp_type + ']'):
+            for chan_name, cond in condSet.items():
+                SA = np.pi*comp.length*comp.diam
+                proto = moose.element(library_name.path + '/' + chan_name)
+                chan = moose.copy(proto, comp, chan_name)[0]
+                chan.Gbar = gbar*SA
+                m = moose.connect(chan, 'channel', comp, 'channel')
+    return cell
