@@ -81,7 +81,7 @@ def discretize(modelLoc,numComps,length,radius,RM,CM,RA,Em):
 def setCompParameters(compvector,comptype,RM,CM,RA,E_leak):
     # Loop through all the compartments in the vector
     for comp in moose.wildcardFind(compvector.path + '/' + '#[TYPE=' + comptype + ']'):
-    	SA = comp.length*comp.diameter
+    	SA = np.pi*comp.length*comp.diameter
 	X_area = np.pi*comp.diameter*comp.diameter/4.0
 	comp.Rm = RM/SA
 	comp.Cm = CM*SA
@@ -171,20 +171,19 @@ def createMultiCompCell(file_name, container_name, library_name, comp_type, chan
         cell = moose.loadModel(file_name, container_name)
         for comp in moose.wildcardFind(cell.path + '/' + '#[TYPE=' + comp_type + ']'):
             for chan_name, cond in condSet.items():
-                SA = np.pi*comp.length*comp.diam
-                proto = moose.element(library_name.path + '/' + chan_name)
+                SA = np.pi*comp.length*comp.diameter
+                proto = moose.element(library_name + '/' + chan_name)
                 chan = moose.copy(proto, comp, chan_name)[0]
                 chan.Gbar = gbar*SA
                 m = moose.connect(chan, 'channel', comp, 'channel')
     else:
         cell = moose.loadModel(file_name, container_name)
-        for comp in moose.wildcardFind(cell.path + '/' + '#[TYPE=' + comp_type + ']'):
-            setCompParameters(comp, 'SymCompartment', cell_RM, cell_CM, cell_RA, cell_initVm)
+        setCompParameters(cell, comp_type, cell_RM, cell_CM, cell_RA, cell_initVm)
         for comp in moose.wildcardFind(cell.path + '/' + '#[TYPE=' + comp_type + ']'):
             for chan_name, cond in condSet.items():
-                SA = np.pi*comp.length*comp.diam
-                proto = moose.element(library_name.path + '/' + chan_name)
+                SA = np.pi*comp.length*comp.diameter
+                proto = moose.element(library_name + '/' + chan_name)
                 chan = moose.copy(proto, comp, chan_name)[0]
-                chan.Gbar = gbar*SA
+                chan.Gbar = cond*SA
                 m = moose.connect(chan, 'channel', comp, 'channel')
     return cell
