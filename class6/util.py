@@ -78,7 +78,7 @@ def discretize(modelLoc,numComps,length,radius,RM,CM,RA,Em):
     return compArray
 
 # Function that will set the parameters for all compartments in a model neuron
-def setCompParameters(compvector,comptype,RM,CM,RA,E_leak):
+def setCompParameters(compvector,comptype,RM,CM,RA,initVm,E_leak):
     # Loop through all the compartments in the vector
     for comp in moose.wildcardFind(compvector.path + '/' + '#[TYPE=' + comptype + ']'):
     	SA = np.pi*comp.length*comp.diameter
@@ -86,7 +86,7 @@ def setCompParameters(compvector,comptype,RM,CM,RA,E_leak):
 	comp.Rm = RM/SA
 	comp.Cm = CM*SA
 	comp.Ra = RA*comp.length/X_area
-	comp.initVm = E_leak
+	comp.initVm = initVm
 	comp.Em = E_leak
 
 # Function that will create a pulse in NEURON
@@ -178,7 +178,7 @@ def createMultiCompCell(file_name, container_name, library_name, comp_type, chan
                 m = moose.connect(chan, 'channel', comp, 'channel')
     else:
         cell = moose.loadModel(file_name, container_name)
-        setCompParameters(cell, comp_type, cell_RM, cell_CM, cell_RA, cell_initVm)
+        setCompParameters(cell, comp_type, cell_RM, cell_CM, cell_RA, cell_initVm, cell_Em)
         for comp in moose.wildcardFind(cell.path + '/' + '#[TYPE=' + comp_type + ']'):
             for chan_name, cond in condSet.items():
                 SA = np.pi*comp.length*comp.diameter

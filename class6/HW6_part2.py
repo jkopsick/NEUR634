@@ -12,9 +12,9 @@ CM = 1e-6*1e4
 RA = 1
 Em = EREST_ACT + 10.613e-3
 initVm = EREST_ACT
-cond_set = {'Na': 120, 'K': 36}
+cond_set = {'Na': 10000, 'K': 2500}
 pulse_dur = 100e-3
-pulse_amp = 2e-9
+pulse_amp = 0.75e-9
 pulse_delay1 = 20e-3
 pulse_delay2 = 1e9
 
