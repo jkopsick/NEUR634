@@ -113,7 +113,7 @@ def recordTimeNeuron():
 # These named tuples provide a template for creating the biophysics associated with a given
 # channel type
 AlphaBetaChanParams = namedtuple('AlphaBetaChannelParams',
-                         'A_rate A_B A_C A_Vhalf A_vslope B_rate B_B B_C B_vhalf B_vslope')
+                         'A_rate A_B A_C A_vhalf A_vslope B_rate B_B B_C B_vhalf B_vslope')
 ChannelSettings = namedtuple('ChannelSettings', 'Xpow Ypow Erev name Xparam Yparam')
 
 # Function that will create from the biophysics defined for a channel a MOOSE channel
