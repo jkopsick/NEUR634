@@ -96,14 +96,15 @@ Na_param = u.ChannelSettings(Xpow = 3, Ypow = 1, Zpow = 0,
                              chan_type = [])
 
 K_param = u.ChannelSettings(Xpow = 4, Ypow = 0, Zpow = 0, Erev = -12e-3 + EREST_ACT, name = 'K',
-                          Xparam = K_n_params, Yparam = [], Zparam = [],
-                          chan_type = [])
+                            Xparam = K_n_params, Yparam = [], Zparam = [],
+                            chan_type = [])
 
 KaF_param = u.ChannelSettings(Xpow = 2, Ypow = 1, Zpow = 0, Erev = -20e-3 + EREST_ACT, name = 'KaF',
                               Xparam = KaF_X_params, Yparam = KaF_Y_params, Zparam = [],
 			      chan_type = [])
 
-sk_params = u.ChannelSettings(Xpow = 0, Ypow = 0, Zpow = 1, Erev = -87e-3, name = 'SKCa', Xparam = [], Yparam = [], Zparam = SK_Z_params, chan_type = 'ca_dependent')
+sk_params = u.ChannelSettings(Xpow = 0, Ypow = 0, Zpow = 1, Erev = -87e-3, name = 'SKCa', Xparam = [], 
+			      Yparam = [], Zparam = SK_Z_params, chan_type = 'ca_dependent')
 
 CaLparam = u.ChannelSettings(Xpow = 1, Ypow = 0, Zpow = 0, Erev = 130e-3,
                              Xparam = CaL_X_params, Yparam = [], Zparam = [],

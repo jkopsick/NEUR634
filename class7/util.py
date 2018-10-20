@@ -120,6 +120,18 @@ CadepParamSettings = namedtuple('CadepParams', 'Kd power tau')
 
 CaPoolSettings = namedtuple('CaPoolSettings', 'CaBasal CaThick CaTau BufCapacity caName')
 
+# Function that will add a set of channels and their corresponding maximal conductances 
+# to each compartment in a model
+def addChannelSet(condSet, library_name, cell, comp_type):
+    for comp in moose.wildcardFind(cell.path + '/' + '#[TYPE=' + comp_type + ']'):
+        for chan_name, cond in condSet.items():
+            SA = np.pi*comp.length*comp.diameter
+            proto = moose.element(library_name + '/' + chan_name)
+            chan = moose.copy(proto, comp, chan_name)[0]
+            chan.Gbar = cond*SA
+            m = moose.connect(chan, 'channel', comp, 'channel')
+    return
+
 # Function to connect calcium to the channel
 def connect_cal2chan(chan_name, chan_type, cellname, calname, comp_type):
     for comp in moose.wildcardFind(cellname.path + '/' + '#[TYPE=' + comp_type + ']'):
@@ -190,7 +202,6 @@ def createChanProto(libraryName, channelParams, rateParams, CaParams = None):
         zGate = moose.HHGate(channel.path + '/' + 'gateZ')
         zGate.min = CaParams[0]
         zGate.max = CaParams[1]
-        print zGate
         # custom equation for the Ca dynamics
         caterm = (ca_array/channelParams.Zparam.Kd)
         caterm = caterm**channelParams.Zparam.power
