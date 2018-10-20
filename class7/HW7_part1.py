@@ -12,7 +12,7 @@ CM = 1e-6*1e4
 RA = 1
 Em = EREST_ACT + 10.613e-3
 initVm = EREST_ACT
-cond_set = {'Na': 10000, 'K': 2500, 'SKCa': 2, 'CaL': 15}
+cond_set = {'Na': 10000, 'K': 2500, 'KaF': 10000, 'SKCa': 100000, 'CaL': 400}
 pulse_dur = 100e-3
 pulse_amp = 0.75e-9
 pulse_delay1 = 20e-3
@@ -23,11 +23,16 @@ swcfile = '33-RVT162-1-4e.CNG.swc'
 container = 'gran_cell'
 libraryName = '/library'
 compType = 'Compartment'
-gran_cell = u.createMultiCompCell(swcfile, container, libraryName, compType, 					  chan_set, cond_set, rateParams, CaParams, RM, CM, RA, initVm, Em)
-moose.showfield('/gran_cell/soma')
-u.add_calcium(libraryName,gran_cell, Ca_pool_params, 'Compartment')
-u.connect_cal2chan(chan_set['Ca'].name, chan_set['Ca'].chan_type, gran_cell,
-                   Ca_pool_params.caName, 'Compartment') 
+gran_cell = u.createMultiCompCell(swcfile, container, libraryName, compType, 					  chan_set, cond_set, rateParams, CaParams, Ca_pool_params,
+				  RM, CM, RA, initVm, Em)
+#for key in chan_set.keys():
+#    if ("Ca" in key):
+#        u.connect_cal2chan(chan_set[key].name, chan_set[key].chan_type, gran_cell,
+#                    	 Ca_pool_params.caName, compType)
+
+
+#u.connect_cal2chan(chan_set['Ca'].name, chan_set['Ca'].chan_type, gran_cell,
+#                   Ca_pool_params.caName, 'Compartment')
 
 # Re-create the python variable pointing to the gran_cell to limit results just to 
 # type compartment (excludes the spines and allows for createDataTables function to

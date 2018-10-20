@@ -128,7 +128,7 @@ def connect_cal2chan(chan_name, chan_type, cellname, calname, comp_type):
         if chan_type == 'ca_permeable':
             m = moose.connect(chan, 'IkOut', capool, 'current')
         elif chan_type == 'ca_dependent':
-            m = moose.connect(capool, 'concOut', chan, 'concan')
+            m = moose.connect(capool, 'concOut', chan, 'concen')
         else:
             print ('unknown calcium connection type')
     return
@@ -223,11 +223,12 @@ def createChanLib(libraryName, channelSet, rateParams, CaParams):
 
 # Function that will create a multi-compartment model in MOOSE from a .p or .swc file
 def createMultiCompCell(file_name, container_name, library_name, comp_type, channelSet, condSet,
-                        rateParams, CaParams, cell_RM = None, cell_CM = None, cell_RA = None, 
-                        cell_initVm = None, cell_Em = None):
+                        rateParams, CaParams = None, CaPoolParams = None, cell_RM = None, 
+			cell_CM = None, cell_RA = None, cell_initVm = None, cell_Em = None):
     # Create the channel types and store them in a library to be used by each compartment
     # in the model
     createChanLib(library_name, channelSet, rateParams, CaParams)
+
     # Load in the model in question
     if file_name.endswith('.p'):
         cell = moose.loadModel(file_name, container_name)
@@ -248,4 +249,19 @@ def createMultiCompCell(file_name, container_name, library_name, comp_type, chan
                 chan = moose.copy(proto, comp, chan_name)[0]
                 chan.Gbar = cond*SA
                 m = moose.connect(chan, 'channel', comp, 'channel')
+        # Add the calcium pool to each compartment in the cell if it has been specified
+        if (CaPoolParams != None):
+	    add_calcium(library_name, cell, CaPoolParams, comp_type)
+	    for key in channelSet.keys():
+	        if ("Ca" in key):
+		    connect_cal2chan(channelSet[key].name, channelSet[key].chan_type, cell,
+                    		     CaPoolParams.caName, comp_type)
     return cell
+
+# Add the calcium pool to each compartment in the cell if it has been specified
+#	if (CaPoolParams != None):
+#	    add_calcium(library_name, cell, CaPoolParams, comp_type)
+#	for key in channelSet.keys():
+#	    if ("Ca" in key):
+#		connect_cal2chan(channelSet[key].name, channelSet[key].chan_type, cell,
+#                    		 CaPoolParams.caName, comp_type)

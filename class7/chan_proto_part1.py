@@ -50,6 +50,34 @@ K_n_params = u.AlphaBetaChanParams(1e4 * (10e-3 + EREST_ACT),   #  'A_A':
                80e-3                       #  'B_F':  
                )
 
+# activation constants for alphas and betas (obtained by
+# matching m2 to Tkatch et al., 2000 Figs 2c, and mtau to fig 2b)
+qfactKaF = 2
+KaF_X_params = u.AlphaBetaChanParams(A_rate = 1.8e3*qfactKaF,
+                                      A_B = 0,
+                                      A_C = 1.0,
+                                      A_vhalf = 18e-3,
+                                      A_vslope = -13.0e-3,
+                                      B_rate = 0.45e3*qfactKaF,
+                                      B_B = 0.0,
+                                      B_C = 1.0,
+                                      B_vhalf = -2.0e-3,
+                                      B_vslope = 11.0e-3)
+
+#inactivation consts for alphas and betas obtained by matching Tkatch et al., 2000 Fig 3b,
+#and tau voltage dependence consistent with their value for V=0 in fig 3c.
+#slowing down inact improves spike shape tremendously
+KaF_Y_params = u.AlphaBetaChanParams(A_rate = 0.105e3*qfactKaF,
+                                      A_B = 0,
+                                      A_C = 1.0,
+                                      A_vhalf = 121e-3,
+                                      A_vslope = 22.0e-3,
+                                      B_rate = 0.065e3*qfactKaF,
+                                      B_B = 0.0,
+                                      B_C = 1.0,
+                                      B_vhalf = 55.0e-3,
+                                      B_vslope = -11.0e-3)
+
 CaL_X_params = u.AlphaBetaChanParams(A_rate = -880, A_B = -220e3, A_C = -1.0,
                                      A_vhalf = 4.0003e-3, A_vslope = -7.5e-3,
                                      B_rate = -284, B_B = 71e3, B_C = -1.0,
@@ -70,6 +98,10 @@ Na_param = u.ChannelSettings(Xpow = 3, Ypow = 1, Zpow = 0,
 K_param = u.ChannelSettings(Xpow = 4, Ypow = 0, Zpow = 0, Erev = -12e-3 + EREST_ACT, name = 'K',
                           Xparam = K_n_params, Yparam = [], Zparam = [],
                           chan_type = [])
+
+KaF_param = u.ChannelSettings(Xpow = 2, Ypow = 1, Zpow = 0, Erev = -20e-3 + EREST_ACT, name = 'KaF',
+                              Xparam = KaF_X_params, Yparam = KaF_Y_params, Zparam = [],
+			      chan_type = [])
 
 sk_params = u.ChannelSettings(Xpow = 0, Ypow = 0, Zpow = 1, Erev = -87e-3, name = 'SKCa', Xparam = [], Yparam = [], Zparam = SK_Z_params, chan_type = 'ca_dependent')
 
@@ -94,6 +126,6 @@ CaMAX = 1
 CaDIVS = 10000
 
 # Creation of the channels and placing them into a specified MOOSE library
-chan_set = {'Na': Na_param, 'K': K_param, 'Ca' : sk_params, 'CaL' : CaLparam}
+chan_set = {'Na': Na_param, 'K': K_param, 'KaF': KaF_param, 'SKCa' : sk_params, 'CaL' : CaLparam}
 rateParams = (VDIVS, VMIN, VMAX)
 CaParams = (CaMIN, CaMAX, CaDIVS)
