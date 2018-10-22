@@ -248,8 +248,15 @@ def createMultiCompCell(file_name, container_name, library_name, comp_type, chan
                 SA = np.pi*comp.length*comp.diameter
                 proto = moose.element(library_name + '/' + chan_name)
                 chan = moose.copy(proto, comp, chan_name)[0]
-                chan.Gbar = gbar*SA
+                chan.Gbar = cond*SA
                 m = moose.connect(chan, 'channel', comp, 'channel')
+        # Add the calcium pool to each compartment in the cell if it has been specified
+        if (CaPoolParams != None):
+	    add_calcium(library_name, cell, CaPoolParams, comp_type)
+	    for key in channelSet.keys():
+	        if ("Ca" in key):
+		    connect_cal2chan(channelSet[key].name, channelSet[key].chan_type, cell,
+                    		     CaPoolParams.caName, comp_type)
     else:
         cell = moose.loadModel(file_name, container_name)
         setCompParameters(cell, comp_type, cell_RM, cell_CM, cell_RA, cell_initVm, cell_Em)
