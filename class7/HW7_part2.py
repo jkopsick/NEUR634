@@ -1,14 +1,3 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Sep 28 13:27:01 2018
-
-@author: jeffk
-
-This python file adapts ionchannel.py and uses the functions that I have
-created.
-"""
-
 # Import all libraries necessary to run the file
 import numpy as np
 import matplotlib.pyplot as plt
@@ -23,7 +12,7 @@ EREST_ACT = -70e-3 #: Resting membrane potential
 # Define the variables needed to create the compartment and the channels
 squid_l = 50e-6
 squid_rad = 15e-6
-SA = np.pi*squid_l*2*squid_rad
+#SA = np.pi*squid_l*2*squid_rad
 Em = EREST_ACT + 10.613e-3
 initVm = EREST_ACT
 RM = 1/(0.3e-3*1e4)
@@ -34,7 +23,7 @@ pulse_delay1 = 20e-3
 pulse_amp = 1e-9
 pulse_delay2 = 1e9
 
-cond_set = {'Na': 120e-3*1e4, 'K': 36e-3*1e4, 'KaF': 0e-3*1e4, 'SKCa': 0e-3*1e4, 'CaL': 0e-3*1e4}
+cond_set = {'Na': 120e-3*1e4, 'K': 36e-3*1e4, 'KaF': 0e-3*1e4, 'SKCa': 5e-3*1e4, 'CaL': 10e-3*1e4}
 libraryName = '/library'
 compType = 'Compartment'
 
@@ -67,14 +56,6 @@ for key in chan_set.keys():
     if ("Ca" in key):
         u.connect_cal2chan(chan_set[key].name, chan_set[key].chan_type, neuron,
                     	   Ca_pool_params.caName, compType)
-
-#nachan = moose.copy('/library/Na', container, 'na', 1)
-#nachan.Gbar = 120e-3 * SA * 1e4 # Gbar_Na = 120 mS/cm^2
-#moose.connect(nachan, 'channel', squid, 'channel', 'OneToOne')
-
-#kchan = moose.copy('/library/K', container, 'k', 1)
-#kchan.Gbar = 36e-3 * SA * 1e4 # Gbar_K = 36 mS/cm^2
-#moose.connect(kchan, 'channel', squid, 'channel', 'OneToOne')
 
 # Plot the simulation
 simtime = 0.1

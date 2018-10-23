@@ -6,7 +6,7 @@ import util as u
 from chan_proto_part1 import chan_set, rateParams, Ca_pool_params, CaParams
 
 # Define the variables needed for the creation of the compartments and pulse
-cond_set = {'Na': 10000, 'K': 2500, 'KaF': 0, 'SKCa': 0, 'CaL': 0}
+cond_set = {'Na': 10000, 'K': 2500, 'KaF': 10000, 'SKCa': 20, 'CaL': 100}
 pulse_dur = 100e-3
 pulse_amp = 0.75e-9
 pulse_delay1 = 20e-3

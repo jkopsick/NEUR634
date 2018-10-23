@@ -275,11 +275,3 @@ def createMultiCompCell(file_name, container_name, library_name, comp_type, chan
 		    connect_cal2chan(channelSet[key].name, channelSet[key].chan_type, cell,
                     		     CaPoolParams.caName, comp_type)
     return cell
-
-# Add the calcium pool to each compartment in the cell if it has been specified
-#	if (CaPoolParams != None):
-#	    add_calcium(library_name, cell, CaPoolParams, comp_type)
-#	for key in channelSet.keys():
-#	    if ("Ca" in key):
-#		connect_cal2chan(channelSet[key].name, channelSet[key].chan_type, cell,
-#                    		 CaPoolParams.caName, comp_type)
