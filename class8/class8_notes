@@ -1,0 +1,112 @@
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import util as u
+>>> 
+[jeffk@localhost class8]$ python
+Python 2.7.14 (default, Mar 14 2018, 16:45:33) 
+[GCC 8.0.1 20180222 (Red Hat 8.0.1-0.16)] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> from neuron import h,gui
+>>> from matplotlib import pyplot
+>>> soma = h.Section(name='soma')
+>>> dend = h.Section(name='dend')
+>>> dend.connect(soma(1))
+dend
+>>> soma.L = soma.diam = 12.6157
+>>> dend.L = 200
+>>> dend.diam = 1
+>>> for sec in h.allsec():
+...     sec.Ra = 100
+...     sec.cm = 1
+... 
+>>> # insert active HH current in the soma
+... 
+>>> soma.insert('hh')
+soma
+>>> soma.gnabar_hh = 0.12
+>>> soma.gkbar_hh = 0.036
+>>> soma.gl_hh = 0.0003
+>>> soma.el_hh = -54.3
+>>> # Remember to insert membrane resistance in the dendrite
+... 
+>>> dend.insert('pas')
+dend
+>>> dend.g_pas = 0.001
+>>> dend.e_pas = -65
+>>> dend.nseg = 10
+>>> stim = h.Iclamp(dend(1.0))
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+AttributeError: 'hoc.HocObject' object has no attribute 'Iclamp'
+>>> stim = h.IClamp(dend(1.0))
+>>> stim.amp = 0.3
+>>> stim.delay = 40
+>>> stim.dur = 1
+>>> t_vec = h.Vector()
+>>> v_vec_soma = h.Vector()
+>>> v_vec_dend = h.Vector()
+>>> v_vec_soma.record(soma(1.0)._ref_v)
+1.0
+>>> v_vec_dend.record(dend(1.0)._ref_v)
+1.0
+>>> t_vec.record((h._ref_t)
+... 
+... t_vec.record((h._ref_t))
+  File "<stdin>", line 3
+    t_vec.record((h._ref_t))
+        ^
+SyntaxError: invalid syntax
+>>> t_vec.record(h._ref_t)
+1.0
+>>> h.tstop = 60
+>>> h.run()
+0.0
+>>> pyplot.figure(figsize=(8,4))
+<Figure size 800x400 with 0 Axes>
+>>> pyplot.plot(t_vec, v_vec_soma)
+[<matplotlib.lines.Line2D object at 0x7f4d7d097b50>]
+>>> pyplot.plot(t_vec, v_vec_dend, 'r')
+[<matplotlib.lines.Line2D object at 0x7f4d7f7b38d0>]
+>>> pyplot.xlabel('time (ms)')
+Text(0.5,0,'time (ms)')
+>>> pyplot.ylabel(mV')
+  File "<stdin>", line 1
+    pyplot.ylabel(mV')
+                     ^
+SyntaxError: EOL while scanning string literal
+>>> pyplot.ylabel('mV')
+Text(0,0.5,'mV')
+>>> pyplot.show()
+>>> soma.insert('Ca')
+soma
+>>> for sec in h.allsec():
+...     h.psection()
+... 
+soma { nseg=1  L=12.6157  Ra=100
+	/*location 0 attached to cell 0*/
+	/* First segment only */
+	insert morphology { diam=12.6157}
+	insert capacitance { cm=1}
+	insert hh { gnabar_hh=0.12 gkbar_hh=0.036 gl_hh=0.0003 el_hh=-54.3}
+	insert na_ion { ena=50}
+	insert k_ion { ek=-77}
+	insert Ca { gmax_Ca=0}
+	insert ca_ion { eca=132.458}
+}
+1.0
+dend { nseg=10  L=200  Ra=100
+	soma connect dend (0), 1
+	/* First segment only */
+	insert pas { g_pas=0.001 e_pas=-65}
+	insert capacitance { cm=1}
+	insert morphology { diam=1}
+}
+1.0
+>>> soma.gbar_Ca=0
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+AttributeError: 'nrn.Section' object has no attribute 'gbar_Ca'
+>>> soma.gmax_Ca=0
+>>> soma.gmax_Ca=20
+>>> soma.gmax_Ca=0.002
+>>> soma.gmax_Ca=0.050
+>>> soma.gmax_Ca=0.5
