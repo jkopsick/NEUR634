@@ -1,7 +1,7 @@
 import moose
 import numpy as np
 from collections import namedtuple
-from neuron import h
+#from neuron import h
 
 # Create an object to store the simple hierarchy, and the compartment object soma -- must use characters around compartment name
 def createCompartment(directory,compname,length,radius,RM,CM,RA,initVm,Em):
@@ -275,3 +275,28 @@ def createMultiCompCell(file_name, container_name, library_name, comp_type, chan
 		    connect_cal2chan(channelSet[key].name, channelSet[key].chan_type, cell,
                     		     CaPoolParams.caName, comp_type)
     return cell
+
+# Function that will add excitatory or inhibitory synchans (with a SimpleSynHandler) to a single or
+# set of compartments
+def addSynChan(compname, synparams):
+    synchan = moose.SynChan(compname.path + '/' + synparams['name'])
+    synchan.Gbar = synparams['Gbar']
+    synchan.tau1 = synparams['tau1']
+    synchan.tau2 = synparams['tau2']
+    synchan.Ek = synparams['erev']
+    msg = moose.connect(compname, 'channel', synchan, 'channel')
+    sh = moose.SimpleSynHandler(synchan.path + '/' + 'sh')
+    moose.connect(sh, 'activationOut', synchan, 'activation')
+    return sh
+
+# Function that will produce a RandSpike, which can be used as a substitute for a pre-synaptic neuron,
+# and connect it to a channel on the post-synaptic compartment 
+def createRandSpike(spikeParams, synHandler):
+    pre_syn = moose.RandSpike(spikeParams['name'])
+    pre_syn.rate = spikeParams['rate']
+    pre_syn.refractT = spikeParams['refractT']
+    index = synHandler.synapse.num
+    synHandler.synapse.num = synHandler.synapse.num + 1
+    synHandler.synapse[index].delay = spikeParams['delay']
+    moose.connect(pre_syn, 'spikeOut', synHandler.synapse[index], 'addSpike')
+    return pre_syn
