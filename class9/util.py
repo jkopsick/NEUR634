@@ -41,7 +41,7 @@ def createPulse(compname,pulsename,duration,amplitude,delay1,delay2):
     return pulsename
 
 # Create data tables that will store the current and voltage associated with a compartment
-def createDataTables(compname,data_hierarchy,pulsename):
+def createDataTables(compname,data_hierarchy,pulsename=None):
     # Create a new path using string manipulation to be used in the creation
     # of a unique data table for each compartment
     comp_path = compname.path.split('/')[-1]
@@ -51,8 +51,11 @@ def createDataTables(compname,data_hierarchy,pulsename):
     Vmtab = moose.Table(data_hierarchy.path + '/' + comp_path + '_Vm')
     moose.connect(Vmtab, 'requestOut', compname, 'getVm')
     # Create the unique external current table and connect this to the compartment
-    current_tab = moose.Table(data_hierarchy.path + '/' + comp_path + '_Iex')
-    moose.connect(current_tab, 'requestOut', pulsename, 'getOutputValue')
+    if pulsename is not None:
+        current_tab = moose.Table(data_hierarchy.path + '/' + comp_path + '_Iex')
+        moose.connect(current_tab, 'requestOut', pulsename, 'getOutputValue')
+    else:
+        current_tab = None
     return Vmtab, current_tab
 
 # Function that will discretize a compartment into N many segments
@@ -285,9 +288,17 @@ def addSynChan(compname, synparams):
     synchan.tau2 = synparams['tau2']
     synchan.Ek = synparams['erev']
     msg = moose.connect(compname, 'channel', synchan, 'channel')
-    sh = moose.SimpleSynHandler(synchan.path + '/' + 'sh')
+    sh = moose.SimpleSynHandler(synchan.path + '/' + synparams['name'])
     moose.connect(sh, 'activationOut', synchan, 'activation')
     return sh
+
+# Function that will create a SpikeGen
+def createSpikeGen(spikeParams):
+    spikegen = moose.SpikeGen(spikeParams['name'])
+    spikegen.threshold = spikeParams['threshold']
+    spikegen.refractT = spikeParams['refractT']
+    return spikegen
+
 
 # Function that will produce a RandSpike, which can be used as a substitute for a pre-synaptic neuron,
 # and connect it to a channel on the post-synaptic compartment 
