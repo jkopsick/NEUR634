@@ -26,10 +26,10 @@ dend = u.createCompartment(neuron,'swagginDend',dend_l,dend_rad,RM,CM,RA,Em,Em)
 moose.connect(soma,'axial',dend,'raxial')
 
 # Define dictionaries for the excitatory and inhibitory channels, and the pre-synaptic neurons
-glu = {'name': 'glu', 'Gbar' : 5e-9, 'tau1' : 1e-3, 'tau2' : 5e-3, 'erev' : 0}
+glu = {'name': 'glu', 'Gbar' : 1e-8, 'tau1' : 1e-3, 'tau2' : 5e-3, 'erev' : 0}
 GABA = {'name': 'GABA', 'Gbar' : 1e-6, 'tau1' : 3e-3, 'tau2' : 5e-3, 'erev' : -80e-3}
 presyn1 = {'name': 'presyn1', 'rate' : 10, 'refractT' : 1e-3, 'delay' : 5e-3}
-presyn2 = {'name': 'presyn2', 'rate' : 70, 'refractT' : 1e-3, 'delay' : 5e-3}
+presyn2 = {'name': 'presyn2', 'rate' : 0, 'refractT' : 1e-3, 'delay' : 5e-3}
 
 # Create HH Na and K channels with their corresponding conductances, and place them in a library
 # so that they can be implemented into the compartments (if so desired)
