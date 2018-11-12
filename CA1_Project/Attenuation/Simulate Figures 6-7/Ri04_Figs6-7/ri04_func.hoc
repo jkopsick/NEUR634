@@ -1,0 +1,292 @@
+// Nelson's functions (these should become geometry independent)
+
+proc read_expt_data() {
+	vect = $1		// this is the total length of the wave (ms) - ok to be too long
+	vecdt = $2		// need to vary these depending on the experiment...this is the SI	
+	veclength = int(vect/vecdt)
+	print "Reading real somatic data for fit..."
+	somarawfile.ropen(somareadfile)
+	somarawvec.scanf(somarawfile,veclength,2,2)
+	somarawfile.close()
+	print "Reading real dendritic data for fit..."
+	dendrawfile.ropen(dendreadfile)
+	dendrawvec.scanf(dendrawfile,veclength,2,2)
+	dendrawfile.close()
+	somarawvec.play(&somarawv,vecdt)
+	dendrawvec.play(&dendrawv,vecdt)
+	somarawvec.play_remove()
+	dendrawvec.play_remove()
+	somarawvec.add(soma.sec.v(0.5))
+	dendrawvec.add(dend.sec.v(0.5))
+	somarawvec.play(&somarawv,vecdt)
+	dendrawvec.play(&dendrawv,vecdt)
+}
+
+proc run() {
+	stdinit()
+	setdt()
+	continuerun(tstop)
+	printf ("vmax soma = %4.1f mV at %4.1f ms\n", soma.sec.vmax_dv, soma.sec.vmaxt_dv)
+	printf ("dvmax soma = %4.1f mV at %4.1f ms\n", soma.sec.dvmax_dv, soma.sec.dvmaxt_dv)
+	if (writeout>0) {
+		write_data()
+	}
+	if (fig==6) {
+		fig6_data()
+	}
+}
+
+proc init() { local dtsav
+	if (usecvode>0) {
+		cvode.active(1)
+	}
+	act = cvode.active()	// this stores cvode state even it has been turned on manually in gui
+	cvode.active(0)
+	v_init=Vrest			// v_init is the value displayed in the run control panel
+	finitialize(v_init)
+//	fcurrent()				// no longer necessary according to Hines' notes in stdrun.hoc
+	ss_save()
+	if (writeout>0) {
+		somasimvec.record(&soma.sec.v(0.5))
+		dendsimvec.record(&dend.sec.v(1))
+		tuftsimvec.record(&tuft.sec.v(0.5))
+		basalsimvec.record(&basal.sec.v(0.5))
+	}
+//	if (hblock<1 || init_irk>0) {
+	if (hblock<1) {
+		dtsav=dt
+		dt=10	// do not make this more than 10
+		t=1e6
+		printf("initializing")
+		for i=0,40 {
+			printf(".")
+			fadvance()
+		}
+		printf("\n")
+		dt=dtsav
+		finitialize()
+		i=0
+		forall {
+			vrest[i]=v(0.5)
+			i+=1
+		}
+		ss_save()
+		ss_subtract()
+	}
+	t=0
+	if ( (act<1) && (usecvode>0) ) {
+	    print "turn on cvode after complete initialization"
+	    cvode.active(1)
+	    cvode.atol(1e-3)
+	    cvode.re_init()
+	}
+}
+
+proc advance() {
+	fadvance()
+	ss_subtract()
+}
+
+proc ss_save() {
+	Vrestsoma=soma.sec.vrest_dv
+	Vrestdend=dend.sec.vrest_dv
+	i=0
+	forall {
+		vss[i]=v(0.5)
+		vrest[i]=v(0.5)
+		i+=1
+	}
+}
+
+proc ss_subtract() {
+	vsoma=soma.sec.v(0.5)-Vrestsoma
+	vdend=dend.sec.v(0.5)-Vrestdend
+}
+
+proc somastep_cc() {		//requires 5 arguments passed from init
+	soma.sec elecstim.loc(0.5)
+	elecstim.amp=$1
+	elecstim.del=$2
+	elecstim.dur=$3
+	elecstim.i=0
+}
+
+proc syn_locations() {
+	// synapses for figure 6
+	dendA5_01111111111111111111111111111110 synapse[0].loc(0.8)		// xxx microns
+	dendA5_01111111111111111111111110100 synapse[1].loc(0.7)		// xxx microns
+	dendA5_01111111111111111111111110100 synapse[2].loc(0.9)		// xxx microns
+	dendA5_011111111111111111111111101111100 synapse[3].loc(0.5) 	// 445.91 microns
+	dendA5_011111111111111111111111101111101 synapse[4].loc(0.5) 	// 444.80 microns
+	dendA5_0111111111111111111111111011111010 synapse[5].loc(0.5) 	// 487.49 microns		
+	dendA5_01111111111111111111111110111110100 synapse[6].loc(0.5) 	// 524.33 microns
+	dendA5_01111111111111111111111111111110 synapse[7].loc(0.5) 	// xxx microns
+	dendA5_01111111111111111111111111111111 synapse[8].loc(0.4) 	// xxx microns
+	dendA5_01111111111111111111111111111111 synapse[9].loc(0.8) 	// xxx microns
+	dendA5_0111111111111111111111111011111110 synapse[10].loc(0.5) 	// 453.06 microns
+	dendA5_0111111111111111111111111011111111 synapse[11].loc(0.5) 	// 407.20 microns
+	dendA5_01111111111111111111111111110 synapse[12].loc(0.5) 		// 450.94 microns
+	dendA5_01111111111111111111111111111 synapse[13].loc(0.5) 		// 431.51 microns
+	dendA5_01111111111111111111111111111101 synapse[14].loc(0.1) 	// xxx microns
+	dendA5_01111111111111111111111111111101 synapse[15].loc(0.7) 	// xxx microns
+	dendA5_01111111111111111111111111111100 synapse[16].loc(0.5) 	// 602.31 microns
+	dendA5_011111111111111111111111111111 synapse[17].loc(0.5) 		// 512.88 microns
+	dendA5_0111111111111111111111111111110 synapse[18].loc(0.5) 	// 568.74 microns
+	dendA5_0111111111111111111111111111111 synapse[19].loc(0.5) 	// 583.23 microns
+	dendA5_011111111111111111111111111110 synapse[20].loc(0.4) 		// 529.25 microns
+	dendA5_011111111111111111111111111110 synapse[21].loc(0.7) 		// xxx microns
+	dendA5_0111111111111111111111111111100 synapse[22].loc(0.4) 	// xxx microns
+	dendA5_0111111111111111111111111111100 synapse[23].loc(0.7) 	// xxx microns
+	dendA5_0111111111111111111111111111101 synapse[24].loc(0.3) 	// xxx microns
+	dendA5_0111111111111111111111111111101 synapse[25].loc(0.7) 	// xxx microns
+	dendA5_0111111111111111111111111011111011 synapse[26].loc(0.25)		// xxx microns
+	dendA5_0111111111111111111111111011111011 synapse[27].loc(0.5) 		// 520.19 microns
+	dendA5_0111111111111111111111111011111011 synapse[28].loc(0.75)		// xxx microns
+	dendA5_01111111111111111111111110111110101 synapse[29].loc(0.15)	// xxx microns
+	dendA5_01111111111111111111111110111110101 synapse[30].loc(0.3)		// xxx microns
+	dendA5_01111111111111111111111110111110101 synapse[31].loc(0.45) 	// xxx microns
+	dendA5_01111111111111111111111110111110101 synapse[32].loc(0.6) 	// xxx microns
+	dendA5_01111111111111111111111110111110101 synapse[33].loc(0.75) 	// xxx microns
+	dendA5_01111111111111111111111110111110101 synapse[34].loc(0.9) 	// xxx microns
+	dendA5_011111111111111111111111101111110 synapse[35].loc(0.2)  		// xxx microns
+	dendA5_011111111111111111111111101111110 synapse[36].loc(0.4)  		// xxx microns
+	dendA5_011111111111111111111111101111110 synapse[37].loc(0.6)  		// xxx microns
+	dendA5_011111111111111111111111101111110 synapse[38].loc(0.8)  		// xxx microns
+	dendA5_011111111111111111111111101111110 synapse[39].loc(0.95)  	// xxx microns
+	// synapses for figure 7
+	basal.sec synapse[40].loc(0.5)	// basal - 137 microns
+	apical.sec synapse[41].loc(0.5) 	// proximal apical - 346 microns
+	oblique.sec synapse[42].loc(0.5)	// side branch - 346 microns
+	tuft.sec synapse[43].loc(0.5)	// distal - 782 microns
+	// this from ri06 - need to edit for ri04
+	tuft2.sec synapse[44].loc(0.5)	// distal - 730 microns
+}
+
+proc syn6_cc() {
+	print "Figure 6: setting up 40 tuft synapses with fixed conductance"
+	for i=0,39 {
+		synapse[i].gmax=$2
+		synapse[i].tau0=$3
+		synapse[i].tau1=$4
+		synapse[i].e=$5
+		synapse[i].onset=$6
+	}
+	for i=40,44 {
+		synapse[i].gmax=0
+		synapse[i].tau0=$3
+		synapse[i].tau1=$4
+		synapse[i].e=$5
+		synapse[i].onset=$6
+	}
+}
+
+proc syn7A_cc() {
+	print "Figure 7: setting up single synapses with fixed conductance"
+	for i=0,44 {
+		synapse[i].gmax=0
+		synapse[i].tau0=$3
+		synapse[i].tau1=$4
+		synapse[i].e=$5
+		synapse[i].onset=$6
+	}
+	if (syn7==1) {
+		synsimvec.record(&basal.sec.v(0.5))
+		synapse[40].gmax=0.001
+	}
+	if (syn7==2) {
+		synsimvec.record(&apical.sec.v(0.5))
+		synapse[41].gmax=0.001
+	}
+	if (syn7==3) {
+		synsimvec.record(&oblique.sec.v(0.5))
+		synapse[42].gmax=0.001
+	}	 
+	if (syn7==4) {
+		synsimvec.record(&tuft.sec.v(0.5))
+		synapse[43].gmax=0.001
+	}
+	if (syn7==5) {
+		synsimvec.record(&tuft2.sec.v(0.5))
+		synapse[44].gmax=0.001
+	}
+}
+
+
+// find scale factor
+
+proc findsf() {	/* find scale factor */
+	target=$1
+//	print target
+	error=rn-target
+	adjust=error/target
+	oldareascale=areascale
+	areascale=areascale+(adjust*areascale)
+}
+
+// keeps track of total error between fit and data.
+
+proc sum_error() {
+	if (short>0) {
+		tstarts=7
+		tstartd=5
+	}
+	if (long>0) {
+		tstarts=50
+		tstartd=50
+	}
+	if (both>0) {
+		tstarts=50
+		tstartd=50
+	}
+	if (t>tstarts) {
+		mserrsoma=mserrsoma+($1-somarawv)^2
+	}
+	if (t>tstartd) {
+		mserrdend=mserrdend+($2-dendrawv)^2
+	}
+}
+
+proc avg_error() {		//finds mean square(?) error between fit and data.
+	mserrsoma2=mserrsoma/((tstop-tstarts)/dt)
+	mserrdend2=mserrdend/((tstop-tstartd)/dt)
+/*	mserrsoma=sqrt(mserrsoma2) */
+/*	mserrdend=mserrdend2 */
+	mserrsoma=mserrsoma2
+	mserrdend=mserrdend2
+	mserr=(mserrsoma+mserrdend)/2
+}
+
+//makes new output files
+		
+proc write_data() {
+	printf("Writing output files...\n")
+	outfile.wopen(somaoutname)
+     /*	somasimvec.printf(outfile,"%6.3f\n") */
+	somasimvec.vwrite(outfile)
+	outfile.close()
+
+	outfile.wopen(dendoutname)
+     /*	dendsimvec.printf(outfile,"%6.3f\n") */
+	dendsimvec.vwrite(outfile)
+	outfile.close()
+
+	outfile.wopen(tuftoutname)
+     /*	dendsimvec.printf(outfile,"%6.3f\n") */
+	tuftsimvec.vwrite(outfile)
+	outfile.close()
+
+	outfile.wopen(basaloutname)
+	basalsimvec.vwrite(outfile)
+	outfile.close()
+}
+
+proc write_for_fit() {
+	ropen("conbothsoma.dat")
+	wopen("test.dat")
+	fprint("%d\n", fscan())
+	for i=0,3174 {
+	  fprint("%6.3f  %6.3f\n", fscan(), fscan()-76)
+	}
+	wopen()
+	ropen()
+}

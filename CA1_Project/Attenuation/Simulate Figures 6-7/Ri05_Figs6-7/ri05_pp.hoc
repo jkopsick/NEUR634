@@ -1,0 +1,32 @@
+// creates and specifies location of point processes
+// electrodes (for current injection) and synapses
+// also defines some useful variables for accessing sections
+
+objectvar elecstim[2]
+somaA elecstim[0] = new IClamp(0.5)
+somaA elecstim[1] = new IClamp(0.5)
+
+objectvar synapse[45]
+for i=0,44 {
+	somaA synapse[i] = new synampa(0.5)
+}
+
+// note that distances are corrected for difference between soma(0) and soma(0.5), which is 9 um
+
+// sites for recording
+
+objref soma, dend, dend300
+somaA soma = new SectionRef()  			   				// somatic recording site
+dendA4_011111111111111 dend = new SectionRef()  		// proximal apical recording site: 337 um at 0.5 (346 w/o correction)
+dendA4_01111111111111 dend300 = new SectionRef()  		// dendritic recording site: 297 um at 0.95
+
+// sites for synapses
+
+objref basal, apical, oblique, tuft, tuft2, psyn, dsyn
+dendA1_01110 basal = new SectionRef() 			   		// basal synapse: 131 um at 0.5
+dendA4_011111111111111 apical = new SectionRef()  		// main apical synapse: 332 um at 0.5
+dendA4_011111111111101111 oblique = new SectionRef()	// apical oblique location: 337 um at 0.5
+dendA4_011111111111111111000 tuft = new SectionRef()	// tuft recording site: 771 um at 0.5
+dendA4_011111111111111111000 tuft2 = new SectionRef()	// tuft recording site: 771 um at 0.5
+dendA4_0111111111111111111100 dsyn = new SectionRef()  	// distal dendritic synaptic site: 778 um at 0.5
+dendA4_011111111111101111	psyn = new SectionRef()		// proximal oblique location: 337 um at 0.5

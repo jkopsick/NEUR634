@@ -1,0 +1,211 @@
+// Windows for Figures 6-7
+
+objref hbox, vbox, vbox2, shbox, g, g2, sl, s
+objref save_window_
+objectvar rvp1,rvp2, rvpgraph
+
+proc do_windows() {
+	vbox = new VBox()
+	vbox2 = new VBox()
+	shbox = new VBox()
+	hbox = new HBox()
+	hbox.intercept(1)       //all following creations go into the "hbox" box
+	vbox.intercept(1)
+	xpanel("heading1")
+	xlabel("Simulate Figures 6-7")
+	xlabel("Cell model: Ri04")
+	xpanel()
+	xpanel("heading2")
+	xlabel("Include or Exclude Ih (nonuniform).")
+	xlabel("Start simulation with Init & Run")
+	if (init_h>0) { hstate=1 } else { hstate=0 }
+	xcheckbox("Include H", &hstate, "reset_h(hstate)")
+	xpanel()
+	xpanel("control")
+	xlabel("Run Control")
+	xpanel()
+	nrncontrolmenu()
+	xpanel("instructions1")
+	xlabel("Use the run control menu above to control the")
+	xlabel("duration and time step of the simulations.")
+	xpanel()
+	xpanel("instructions2")
+	xlabel("Change Shape plot and graph characteristics")
+	xlabel("using the menus in the top left corner of")
+	xlabel("each window.")
+	xpanel()
+	xpanel("fig6")
+	if (fig==6) { f6state=1 } else { f6state=0 }
+	xcheckbox("Figure 6 (40 synapses)", &f6state, "setfig(fig)")
+	xlabel("Note: V plotted vs. distance plotted here.")
+	xlabel("Vdend/Vsoma plotted in Fig. 6.")
+	xpanel()
+	xpanel("fig7")
+	if (fig==7) { f7state=1 } else { f7state=0 }
+	xcheckbox("Figure 7 (one synapse; choose below)", &f7state, "setfig(fig)")
+	xpanel()
+	xpanel("choose",1)
+	xcheckbox("basal", &basalstate, "setsyn7(1)")
+	xcheckbox("main", &mainstate, "setsyn7(2)")
+	xcheckbox("oblique", &obliquestate, "setsyn7(3)")
+	xcheckbox("tuft1", &tuft1state, "setsyn7(4)")
+	xcheckbox("tuft2", &tuft2state, "setsyn7(5)")
+	xpanel()
+	xpanel("synapses")
+	xlabel("To view synapse location: Use Tools >")
+	xlabel("Point Processes > Managers > Point Groups.")
+	xlabel("Then select Show All > synampa.")
+	xpanel()
+	vbox.intercept(0)
+	vbox.map("Control",0,0,320,500)
+	vbox2.intercept(1)
+	xpanel("Graph1")
+	g = new Graph(0)
+	g.size(0,600,-70,-62)
+	g.view(0, -70, 100, 8, 276, 83, 480, 300)
+	g.label(0.4,0,"Time (msec)")
+	g.label(0,0.6,"Vm")
+	g.label(0,0.55,"(mV)")
+	graphList[0].append(g)
+	g.save_name("graphList[0].")
+	g.addexpr("Vsoma","somaA.v(0.5)", 1, 1, 0.8, 0.9, 2)
+	g.addexpr("Vdendrite","dendA5_01111111111111111111111.v(0.5)", 1, 1, 0.8, 0.9, 2)
+	xpanel()
+	xpanel("Voltage vs distance")
+	rvp1 = new RangeVarPlot("deltav_dv")
+	rvp2 = new RangeVarPlot("dvmax_dv")
+	access somaA
+	rvp1.begin(0)
+	rvp2.begin(0)
+	rvp1.origin(0)
+	rvp2.origin(0)
+	access dendA5_01111111111111111111111111111111
+	rvp1.end(1)
+	rvp2.end(1)
+	objref rvpgraph
+	rvpgraph = new Graph()
+	rvpgraph.addobject(rvp1,1,0)
+	rvpgraph.addobject(rvp2,2,0)
+	rvpgraph.size(0,750,-1,19)
+	rvpgraph.label(0.4,0,"Distance (um)")
+	rvpgraph.label(0,0.62,"dV")
+	rvpgraph.label(0,0.57,"(mV)")
+	graphList[0].append(rvpgraph)
+	flush_list.append(rvpgraph)
+	xpanel()
+	vbox2.intercept(0)
+	vbox2.map()
+	shbox.intercept(1)
+	xpanel("Shape Plot")
+	access somaA
+	sl = new SectionList()
+	sl.wholetree()
+	s = new PlotShape(sl)
+	s.show(0)
+	s.size(30,90,-40,420)
+	ncmap=11		/* number of colors */
+	vstep=1.0		/* voltage step */
+	vlow=0			/* lowest voltage */
+	vhigh=vlow+(ncmap-1)*vstep
+	s.colormap(ncmap,1)
+	i1=int((ncmap-1)/4)
+	for (i=0; i<=i1; i=i+1) {
+		f=i/((ncmap-1)/4)
+		s.colormap(i,0,255*f,255)
+	}
+	print " "
+	i2=int((ncmap-1)/2)
+	for (i=i1+1; i<=i2; i=i+1) {
+		f=(i-(ncmap-1)/4)/((ncmap-1)/4)
+		s.colormap(i,0,255,255*(1-f))
+	}
+	print " "
+	i3=int(3*(ncmap-1)/4)
+	for (i=i2+1; i<=i3; i=i+1) {
+		f=(i-(ncmap-1)/2)/((ncmap-1)/4)
+		s.colormap(i,255*f,255,0)
+	}
+	print " "
+	for (i=i3+1; i<=ncmap-1; i=i+1) {
+		f=(i-3*(ncmap-1)/4)/((ncmap-1)/4)
+		s.colormap(i,255,255*(1-f),0)
+	} 
+	s.variable("deltav_dv")
+	s.exec_menu("Shape Plot")
+	s.scale(vlow,vhigh)
+	fast_flush_list.append(s)
+	xpanel()
+	shbox.intercept(0)
+	shbox.map("Shape",750,175,500,500)
+	hbox.intercept(0) //ends intercept mode
+	hbox.map("Figures 3-5, Ri04",5,75,1200,750) //draw the box and its contents
+}
+
+proc reset_h() {
+	if ($1>0) {
+		insert_h()
+	} else {
+		forall { uninsert h }
+		print "no more H current in the cell"
+	}
+}
+
+proc setfig() {
+	if ($1<7) {
+		fig=7
+		f6state=0
+		f7state=1
+	} else {
+		fig=6
+		f6state=1
+		f7state=0
+	}
+	if (fig>6) {
+		syn7A_cc(0.5, 0.001, 0.5, 5, 0, 5, 2)
+		setsyn7(4)
+		basalstate=0
+		mainstate=0
+		obliquestate=0
+		tuft1state=1
+		tuft2state=0
+	} else {
+		syn6_cc(0.5, 0.0001, 0.5, 5, 0, 5)
+		basalstate=0
+		mainstate=0
+		obliquestate=0
+		tuft1state=0
+		tuft2state=0
+	}
+}
+
+proc setsyn7() {
+	syn7=$1
+	strdef location
+	basalstate=0
+	mainstate=0
+	obliquestate=0
+	tuft1state=0
+	tuft2state=0
+	if ($1==1) {
+		basalstate=1
+		location="basal"
+	}
+	if ($1==2) {
+		mainstate=1
+		location="main apical"
+	}
+	if ($1==3) {
+		obliquestate=1
+		location="apical oblique"
+	}
+	if ($1==4) {
+		tuft1state=1
+		location="apical tuft 1"
+	}
+	if ($1==5) {
+		tuft2state=1
+		location="apical tuft 2"
+	}
+	syn7A_cc(0.5, 0.001, 0.5, 5, 0, 5, 2)
+	printf("selecting single synapse for fig. 7: %s\n", location)
+}

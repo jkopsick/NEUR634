@@ -1,0 +1,186 @@
+// Nelson's functions (these should become geometry independent)
+
+proc read_expt_data() {
+	vect = $1		// this is the total length of the wave (ms) - ok to be too long
+	vecdt = $2		// need to vary these depending on the experiment...this is the SI	
+	veclength = int(vect/vecdt)
+	print "Reading real somatic data for fit..."
+	somarawfile.ropen(somareadfile)
+	somarawvec.scanf(somarawfile,veclength,2,2)
+	somarawfile.close()
+	print "Reading real dendritic data for fit..."
+	dendrawfile.ropen(dendreadfile)
+	dendrawvec.scanf(dendrawfile,veclength,2,2)
+	dendrawfile.close()
+	somarawvec.play(&somarawv,vecdt)
+	dendrawvec.play(&dendrawv,vecdt)
+	somarawvec.play_remove()
+	dendrawvec.play_remove()
+	somarawvec.add(soma.sec.v(0.5))
+	dendrawvec.add(dend.sec.v(0.6))
+	somarawvec.play(&somarawv,vecdt)
+	dendrawvec.play(&dendrawv,vecdt)
+}
+
+proc run() {
+	stdinit()
+	setdt()
+	continuerun(tstop)
+	if (writeout>0) {
+		write_data()
+	}
+}
+
+proc init() { local dtsav
+	if (usecvode>0) {
+		cvode.active(1)
+	}
+	act = cvode.active()	// this stores cvode state even it has been turned on manually in gui
+	cvode.active(0)
+	v_init=Vrest			// v_init is the value displayed in the run control panel
+	finitialize(v_init)
+//	fcurrent()				// no longer necessary according to Hines' notes in stdrun.hoc
+	ss_save()
+	if (writeout>0) {
+		somasimvec.record(&soma.sec.v(0.5))
+		dendsimvec.record(&dend.sec.v(0.5))
+		basalsimvec.record(&basal.sec.v(0.5))
+		tuftsimvec.record(&tuft.sec.v(0.5))
+	}
+//	if (hblock<1 || init_irk>0) {
+	if (hblock<1) {
+		dtsav=dt
+		dt=10	// do not make this more than 10
+		t=1e6
+		printf("initializing")
+		for i=0,40 {
+			printf(".")
+			fadvance()
+		}
+		printf("\n")
+		dt=dtsav
+		finitialize()
+		i=0
+		forall {
+			vrest[i]=v(0.5)
+			i+=1
+		}
+		ss_save()
+		ss_subtract()
+	}
+	t=0
+	if ( (act<1) && (usecvode>0) ) {
+	    print "turn on cvode after complete initialization"
+	    cvode.active(1)
+	    cvode.atol(1e-3)
+	    cvode.re_init()
+	}
+}
+
+proc advance() {
+	fadvance()
+	ss_subtract()
+}
+
+proc ss_save() {
+	Vrestsoma=soma.sec.vrest_dv(0.5)
+	Vrestdend=dend.sec.vrest_dv(0.6)
+	i=0
+	forall {
+		vss[i]=v(0.5)
+		vrest[i]=v(0.5)
+		i+=1
+	}
+}
+
+proc ss_subtract() {
+	vsoma=soma.sec.v(0.5)-Vrestsoma
+	vdend=dend.sec.v(0.6)-Vrestdend
+}
+
+proc somastep_cc() {		// requires 5 arguments passed from init
+	soma.sec elecstim.loc(0.5)
+	elecstim.amp=$1
+	elecstim.del=$2
+	elecstim.dur=$3
+	elecstim.i=0
+}
+
+// find scale factor
+
+proc findsf() {	/* find scale factor */
+	target=$1
+//	print target
+	error=rn-target
+	adjust=error/target
+	oldareascale=areascale
+	areascale=areascale+(adjust*areascale)
+}
+
+proc sum_error() {
+	if (short>0) {
+		tstarts=7
+		tstartd=5
+	}
+	if (long>0) {
+		tstarts=50
+		tstartd=50
+	}
+	if (both>0) {
+		tstarts=50
+		tstartd=50
+	}
+	if (t>tstarts) {
+		mserrsoma=mserrsoma+($1-somarawv)^2
+	}
+	if (t>tstartd) {
+		mserrdend=mserrdend+($2-dendrawv)^2
+	}
+}
+
+proc avg_error() {		//finds mean square(?) error between fit and data.
+	mserrsoma2=mserrsoma/((tstop-tstarts)/dt)
+	mserrdend2=mserrdend/((tstop-tstartd)/dt)
+/*	mserrsoma=sqrt(mserrsoma2) */
+/*	mserrdend=mserrdend2 */
+	mserrsoma=mserrsoma2
+	mserrdend=mserrdend2
+	mserr=(mserrsoma+mserrdend)/2
+}
+
+//makes new output files
+		
+proc write_data() {
+	printf("Writing output files...\n")
+	outfile.wopen(somaoutname)
+     /*	somasimvec.printf(outfile,"%6.3f\n") */
+	somasimvec.vwrite(outfile)
+	outfile.close()
+
+	outfile.wopen(dendoutname)
+     /*	dendsimvec.printf(outfile,"%6.3f\n") */
+	dendsimvec.vwrite(outfile)
+	outfile.close()
+
+	outfile.wopen(basaloutname)
+	basalsimvec.vwrite(outfile)
+	outfile.close()
+
+	outfile.wopen(tuftoutname)
+     /*	dendsimvec.printf(outfile,"%6.3f\n") */
+	tuftsimvec.vwrite(outfile)
+	outfile.close()
+
+}
+
+proc write_for_fit() {
+	ropen("conbothsoma.dat")
+	wopen("test.dat")
+	fprint("%d\n", fscan())
+	for i=0,3174 {
+	  fprint("%6.3f  %6.3f\n", fscan(), fscan()-76)
+	}
+	wopen()
+	ropen()
+}
+

@@ -1,0 +1,34 @@
+// objects and names for input and output files
+
+strdef somareadfile, dendreadfile
+
+strdef somaoutname, dendoutname, tuftoutname, basaloutname
+somaoutname = "soma.out"
+dendoutname = "dend.out"
+tuftoutname = "tuft.out"
+basaloutname = "basal.out"
+
+objref somarawfile, dendrawfile, outfile
+somarawfile = new File()
+dendrawfile = new File()
+outfile = new File()
+
+objref somarawvec, dendrawvec
+somarawvec = new Vector()
+dendrawvec = new Vector()
+
+objref somasimvec, dendsimvec, tuftsimvec, basalsimvec, synsimvec
+somasimvec = new Vector()
+dendsimvec = new Vector()
+tuftsimvec = new Vector()
+basalsimvec = new Vector()
+synsimvec = new Vector()
+
+somarawv = 0
+dendrawv = 0
+
+objref f1, f2      //declare object references (for Ri loop)
+f1 = new File()         //state that f1, f2, and f3 are pointers to the File class
+f2 = new File()
+
+maxdis=2000		//THIS is used for making plots
