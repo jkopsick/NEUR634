@@ -214,8 +214,8 @@ def createChanProto(libraryName, channelParams, rateParams, CaParams = None, HCN
 	b = HCNParams[3]*beta
 	inf_x = a/(a+b)
 	tau_x = 1/(a+b)
-	xGate.tableA=inf_x/tau_x
-	xGate.tableB=1/tau_x
+	xGate.tableA=inf_x
+	xGate.tableB=tau_x
     
     # Define the inactivation gating kinetics if they exist    
     if channel.Ypower > 0:
@@ -337,8 +337,17 @@ def createRandSpike(spikeParams, synHandler):
     return pre_syn
 
 
-# Function that will allow for the use of the hsolve implicit numerical method
+# Function that will allow for the use of the hsolve implicit numerical method (credit: moose_nerp)
 def hsolve(morph_path, soma_name, simdt):
     hsolve = moose.HSolve(morph_path + '/hsolve')
     hsolve.dt = simdt
     hsolve.target = morph_path + '/' + soma_name
+
+# Function that will allow for acquiring the distance of a compartment from the soma (credit: moose_nerp)
+def get_dist_name(comp):
+    name = comp.name
+    xloc = comp.x
+    yloc = comp.y
+    zloc = comp.z
+    dist = np.sqrt(xloc*xloc+yloc*yloc+zloc*zloc)
+    return dist,name

@@ -75,7 +75,7 @@ VMIN = -30e-3 + EREST_ACT
 #: Maximum x-value for the interpolation table
 VMAX = 120e-3 + EREST_ACT
 #: Number of divisions in the interpolation table
-VDIVS = 3000
+VDIVS = 15
 
 # q10 factor for HCN channel
 q10 = 4.5

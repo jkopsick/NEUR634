@@ -38,6 +38,30 @@ CA1_cell = u.createMultiCompCell(swcfile, container, libraryName, compType, 				
 # work properly)
 CA1_cell = moose.wildcardFind('/CA1_cell/#[TYPE=Compartment]')
 
+# Acquire the distance and the name of each compartment relative to the soma, and place them into
+# a list to be used in the distance-dependent conductance
+nameList = []
+distList = []
+
+for comp in CA1_cell:
+     dist, name = u.get_dist_name(comp)
+     nameList.append(name)
+     distList.append(dist)
+
+distList2 = []
+distList2.append(nameList)
+distList2.append(distList)
+
+minDist = min(distList2[1])
+maxDist = max(distList2[1])
+indexMinDist = distList2[1].index(minDist)
+indexMaxDist = distList2[1].index(maxDist)
+nameMinDist = distList2[0][indexMinDist]
+nameMaxDist = distList2[0][indexMaxDist]
+
+# Get all the compartments that have a name of dend
+[x for x in distList2[0] if "dend" in x]
+
 # Create the pulse and apply it to the granule cell's soma
 CA1_soma_pulse = u.createPulse(CA1_cell[0], 'rollingWave', pulse_dur, pulse_amp, 
                            pulse_delay1, pulse_delay2)
@@ -60,7 +84,7 @@ CA1_ap_167_86_Vm = CA1_tables[7500][0]
 CA1_ap_167_86_Iex = CA1_tables[7500][1]
 
 # Plot the simulation
-simTime = 0.5
+simTime = 1000e-3
 simdt = 2.5e-5
 plotdt = 0.25e-3
 for i in range(10):
@@ -80,3 +104,18 @@ plt.plot(t,CA1_ap_167_86_Vm.vector * 1e3, 'g',label = 'CA1_ap_167_86_Vm (mV)')
 plt.xlabel('time (ms)')
 plt.legend()
 plt.show()
+
+
+
+# Define the variables needed to view the undelying curves for the channel kinetics
+plot_powers = True
+VMIN = -120e-3
+VMAX = 50e-3
+CAMIN = 0.01e-3
+CAMAX = 40e-3
+channelList = ('HCN')
+
+# Graph the curves
+for chan in channelList:
+        libchan=moose.element('/library/' + chan)
+        pc.plot_gate_params(libchan,plot_powers, VMIN, VMAX, CAMIN, CAMAX)
