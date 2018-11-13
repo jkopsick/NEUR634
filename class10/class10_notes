@@ -1,0 +1,20 @@
+import moose
+import numpy as np
+from matplotlib import pyplot as plt
+plt.ion()
+nmdachan = moose.NMDAChan('/nmda')
+moose.showfield(nmdachan)
+
+nmdachan.KMg_A = 0.17
+nmdachan.KMg_B = 0.012
+nmdachan.CMg = 1.4
+ 
+ 
+def magnesium_term(A,B,C):
+     beta = 1.0/A
+     gamma = 1.0/B
+     v = np.linspace(-100e-3,60e-3,1000) # voltage vector
+     mg_term = 1/(1+beta*C*np.exp(-gamma*v))
+     plt.plot(v,mg_term)
+ 
+
