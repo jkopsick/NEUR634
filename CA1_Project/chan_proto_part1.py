@@ -83,4 +83,4 @@ q10 = 4.5
 # Creation of the channels and placing them into a specified MOOSE library
 chan_set = {'Na': Na_param, 'K': K_param, 'HCN' : HCN_param}
 rateParams = (VDIVS, VMIN, VMAX)
-HCNParams = (VMIN, VMAX, VDIVS, q10)
+HCNParams = (VMIN, VMAX, VDIVS+1, q10)

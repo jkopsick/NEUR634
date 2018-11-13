@@ -195,6 +195,7 @@ def createChanProto(libraryName, channelParams, rateParams, CaParams = None, HCN
     if channel.Xpower > 0 and 'HCN' not in channelParams.name :
         xGate = moose.HHGate(channel.path + '/' + 'gateX')
         xGate.setupAlpha(channelParams.Xparam + rateParams)
+	print channelParams.Xpow
 
     # Define custom activation gating kinetics if they exist (Hyperpolarized channel kinetics)
     if channel.Xpower > 0 and 'HCN' in channelParams.name :
@@ -207,15 +208,24 @@ def createChanProto(libraryName, channelParams, rateParams, CaParams = None, HCN
 	alpha = (channelParams.Xparam.alpha_0*np.exp((0.001)*-channelParams.Xparam.a*channelParams.Xparam.z \
 		*(v_array-channelParams.Xparam.Vhalf)*channelParams.Xparam.Fday \
                 /(channelParams.Xparam.R*(273.16 + channelParams.Xparam.T))))
+	print alpha
 	beta = (channelParams.Xparam.alpha_0*np.exp((0.001)*(1-channelParams.Xparam.a) \
 	       *channelParams.Xparam.z*(v_array-channelParams.Xparam.Vhalf)*channelParams.Xparam.Fday/ \
                (channelParams.Xparam.R*(273.16 + channelParams.Xparam.T))))
+	print beta
 	a = HCNParams[3]*alpha
 	b = HCNParams[3]*beta
 	inf_x = a/(a+b)
 	tau_x = 1/(a+b)
-	xGate.tableA=inf_x
-	xGate.tableB=tau_x
+	for i in tau_x:
+	    if i < 2:
+		i = 2
+	    else:
+		i
+
+	xGate.tableA = inf_x / tau_x
+	xGate.tableB = 1 / tau_x
+	print channelParams.Xpow
     
     # Define the inactivation gating kinetics if they exist    
     if channel.Ypower > 0:

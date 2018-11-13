@@ -5,11 +5,12 @@ import numpy as np
 import util as u
 import plot_channel as pc
 from chan_proto_part1 import chan_set, rateParams, HCNParams
+plt.ion()
 
 # Import hyperpolarization activated current from Ascoli, which takes into account the form for the 
 # channel that is utilized in the Golding/Spruston/Kath paper (Magee 1998 channel)
-#nmlchannelfile = 'ih_channel.nml'
-#reader = moose.mooseReadNML2(nmlchannelfile)
+nmlchannelfile = 'CA1_cell'
+reader = moose.mooseReadNML2(nmlchannelfile)
 
 # Define the variables needed for the creation of the compartments and pulse
 EREST_ACT = -70e-3 #: Resting membrane potential
@@ -18,7 +19,7 @@ CM = 1e-6*1e4
 RA = 1
 Em = EREST_ACT + 10.613e-3
 initVm = EREST_ACT
-cond_set = {'Na': 10000, 'K': 2500, 'HCN' : 20000}
+cond_set = {'Na': 0*10000, 'K': 0*2500, 'HCN' : 20000}
 pulse_dur = 400e-3
 pulse_amp = -50e-12
 pulse_delay1 = 20e-3
@@ -32,6 +33,19 @@ compType = 'Compartment'
 CA1_cell = u.createMultiCompCell(swcfile, container, libraryName, compType, 					 chan_set, cond_set, rateParams, CaParams = None,
 				 CaPoolParams = None, HCNParams = HCNParams, cell_RM = RM, 
 				 cell_CM = CM, cell_RA = RA, cell_initVm = initVm, cell_Em = Em)
+
+# Define the variables needed to view the undelying curves for the channel kinetics
+plot_powers = True
+VMIN = -120e-3
+VMAX = 50e-3
+CAMIN = 0.01e-3
+CAMAX = 40e-3
+channelList = ('Na','K','HCN')
+
+# Graph the curves
+for chan in channelList:
+        libchan=moose.element('/library/' + chan)
+        pc.plot_gate_params(libchan,plot_powers, VMIN, VMAX, CAMIN, CAMAX)
 
 # Re-create the python variable pointing to the gran_cell to limit results just to 
 # type compartment (excludes the spines and allows for createDataTables function to
@@ -104,18 +118,3 @@ plt.plot(t,CA1_ap_167_86_Vm.vector * 1e3, 'g',label = 'CA1_ap_167_86_Vm (mV)')
 plt.xlabel('time (ms)')
 plt.legend()
 plt.show()
-
-
-
-# Define the variables needed to view the undelying curves for the channel kinetics
-plot_powers = True
-VMIN = -120e-3
-VMAX = 50e-3
-CAMIN = 0.01e-3
-CAMAX = 40e-3
-channelList = ('HCN')
-
-# Graph the curves
-for chan in channelList:
-        libchan=moose.element('/library/' + chan)
-        pc.plot_gate_params(libchan,plot_powers, VMIN, VMAX, CAMIN, CAMAX)
