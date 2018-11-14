@@ -50,7 +50,7 @@ K_n_params = u.AlphaBetaChanParams(1e4 * (10e-3 + EREST_ACT),   #  'A_A':
                80e-3                       #  'B_F':  
                )
 
-HCN_n_params = u.HCNParamSettings(0.00057, 0.4, 7, -81, 9.648e4, 8.315, 35)
+HCN_n_params = u.HCNParamSettings(0.00057, 0.4, 7, -81e-3, 9.648e4, 8.315, 35)
 
 
 Na_param = u.ChannelSettings(Xpow = 3, Ypow = 1, Zpow = 0, 
@@ -75,7 +75,7 @@ VMIN = -30e-3 + EREST_ACT
 #: Maximum x-value for the interpolation table
 VMAX = 120e-3 + EREST_ACT
 #: Number of divisions in the interpolation table
-VDIVS = 15
+VDIVS = 3400
 
 # q10 factor for HCN channel
 q10 = 4.5
@@ -83,4 +83,4 @@ q10 = 4.5
 # Creation of the channels and placing them into a specified MOOSE library
 chan_set = {'Na': Na_param, 'K': K_param, 'HCN' : HCN_param}
 rateParams = (VDIVS, VMIN, VMAX)
-HCNParams = (VMIN, VMAX, VDIVS+1, q10)
+HCNParams = (100, 50, VDIVS+1, q10)
