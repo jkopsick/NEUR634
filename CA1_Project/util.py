@@ -200,6 +200,8 @@ def createChanProto(libraryName, channelParams, rateParams, CaParams = None, HCN
 
     # Define custom activation gating kinetics if they exist (Hyperpolarized channel kinetics)
     if channel.Xpower > 0 and 'HCN' in channelParams.name :
+	FbyRT=channelParams.Xparam.Fday/ \
+               (channelParams.Xparam.R*(273.16 + channelParams.Xparam.T))
 	channel.Xpower = channelParams.Xpow
         xGate = moose.HHGate(channel.path + '/' + 'gateX')
 	v_array = np.linspace(HCNParams[0], HCNParams[1], HCNParams[2])
@@ -207,26 +209,23 @@ def createChanProto(libraryName, channelParams, rateParams, CaParams = None, HCN
 	xGate.max = HCNParams[1]
 	# custom equation for HCN gating kinetics
 	alpha = (channelParams.Xparam.alpha_0*np.exp(-channelParams.Xparam.a*channelParams.Xparam.z \
-		*(v_array-channelParams.Xparam.Vhalf)*channelParams.Xparam.Fday \
-                /(channelParams.Xparam.R*(273.16 + channelParams.Xparam.T))))
-	print alpha
+		*(v_array-channelParams.Xparam.Vhalf)*FbyRT))
 	beta = (channelParams.Xparam.alpha_0*np.exp((1-channelParams.Xparam.a) \
-	       *channelParams.Xparam.z*(v_array-channelParams.Xparam.Vhalf)*channelParams.Xparam.Fday/ \
-               (channelParams.Xparam.R*(273.16 + channelParams.Xparam.T))))
-	print beta
-	q10 = HCNParams[3]**((35-channelParams.Xparam.T)/10)
-	a = q10*alpha
-	b = q10*beta
-	inf_x = a/(a+b)
-	tau_x = 1/(a+b)
-	#for i in tau_x:
-	#    if i < 2:
-	#	i = 2
-	#    else:
-	#	i
+	       *channelParams.Xparam.z*(v_array-channelParams.Xparam.Vhalf)*FbyRT))
+	q10 = HCNParams[3]**((channelParams.Xparam.T-33)/10)
+	inf_x = alpha/(alpha+beta)
+	tau_x = 1/(q10*(alpha+beta))
+	tau_x = [tau_x if tau_x > 2 else 2 for tau_x in tau_x]
+	tau_x = np.array(tau_x)
+	#for i in range(len(tau_x)):
+	#    if tau[i] < 2:
+	#	tau[i] = 2
 
-	xGate.tableA = inf_x
-	xGate.tableB = tau_x
+
+	xGate.tableA = inf_x /tau_x
+	xGate.tableB = 1 / tau_x
+	print xGate.tableA
+	print xGate.tableB
 	print channelParams.Xpow
     
     # Define the inactivation gating kinetics if they exist    

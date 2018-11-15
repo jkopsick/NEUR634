@@ -9,22 +9,22 @@ from chan_proto_part1 import chan_set, rateParams, HCNParams
 plt.ion()
 
 # Define the variables needed for the creation of the compartments and pulse
-EREST_ACT = -67e-3 #: Resting membrane potential
+EREST_ACT = -69e-3 #: Resting membrane potential
 #RM = 1/(0.3e-3*1e4)
-RM = 4
+RM = 3.988*1.54
 #CM = 1e-6*1e4
-CM = 1.0153e-6*1e4
+CM = (1.0153e-6*1e4)/1.54
 #RA = 1
-RA = 2.5
+RA = 2.5*1.54
 Em = EREST_ACT + 10.613e-3
 initVm = EREST_ACT
-cond_set = {'Na': 0*10000, 'K': 0*2500, 'HCN' : 8e-9*1e12}
+cond_set = {'Na': 0*10000, 'K': 0*2500, 'HCN' : 0e-9*1e12}
 #cond_set = {'Na': {(0, 30e-6): 120e-3*1e4, (30e-6, 1) : 0e-3*1e-4}, 
 #	    'K': {(0, 30e-6): 0e-3*1e4, (30e-6, 1) : 0e-3*1e-4}, 
 #	    'HCN' : {(0, 30e-6): 2e-9*1e12, (30e-6, 1) : 8e-9*1e12}}
 pulse_dur = 400e-3
 pulse_amp = -50e-12
-pulse_delay1 = 0e-3
+pulse_delay1 = 20e-3
 pulse_delay2 = 1e9
 
 # Load a multi-compartment model into MOOSE and give it channels
@@ -81,7 +81,7 @@ dend = []
 
 
 # Get all the compartments that have a name of dend
-[x for x in distList2[0] if "dend" in x]
+[x for x in distList2[0] if "apical_1_" in x]
 
 # Create the pulse and apply it to the granule cell's soma
 CA1_soma_pulse = u.createPulse(CA1_cell[0], 'rollingWave', pulse_dur, pulse_amp, 

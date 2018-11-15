@@ -63,7 +63,7 @@ K_param = u.ChannelSettings(Xpow = 4, Ypow = 0, Zpow = 0, Erev = -12e-3 + EREST_
                             Xparam = K_n_params, Yparam = [], Zparam = [],
                             chan_type = [])
 
-HCN_param = u.ChannelSettings(Xpow = 1, Ypow = 0, Zpow = 0, Erev = -25e-3, name = 'HCN',
+HCN_param = u.ChannelSettings(Xpow = 1, Ypow = 0, Zpow = 0, Erev = -13e-3, name = 'HCN',
                             Xparam = HCN_n_params, Yparam = [], Zparam = [],
                             chan_type = [])
 
