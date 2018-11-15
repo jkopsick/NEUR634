@@ -63,7 +63,7 @@ K_param = u.ChannelSettings(Xpow = 4, Ypow = 0, Zpow = 0, Erev = -12e-3 + EREST_
                             Xparam = K_n_params, Yparam = [], Zparam = [],
                             chan_type = [])
 
-HCN_param = u.ChannelSettings(Xpow = 1, Ypow = 0, Zpow = 0, Erev = -13e-3, name = 'HCN',
+HCN_param = u.ChannelSettings(Xpow = 1, Ypow = 0, Zpow = 0, Erev = -25e-3, name = 'HCN',
                             Xparam = HCN_n_params, Yparam = [], Zparam = [],
                             chan_type = [])
 
@@ -83,4 +83,4 @@ q10 = 4.5
 # Creation of the channels and placing them into a specified MOOSE library
 chan_set = {'Na': Na_param, 'K': K_param, 'HCN' : HCN_param}
 rateParams = (VDIVS, VMIN, VMAX)
-HCNParams = (100, 50, VDIVS+1, q10)
+HCNParams = (-100e-3, 50e-3, VDIVS+1, q10)

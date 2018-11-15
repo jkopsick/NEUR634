@@ -206,11 +206,11 @@ def createChanProto(libraryName, channelParams, rateParams, CaParams = None, HCN
 	xGate.min = HCNParams[0]
 	xGate.max = HCNParams[1]
 	# custom equation for HCN gating kinetics
-	alpha = (channelParams.Xparam.alpha_0*np.exp((0.001)*-channelParams.Xparam.a*channelParams.Xparam.z \
+	alpha = (channelParams.Xparam.alpha_0*np.exp(-channelParams.Xparam.a*channelParams.Xparam.z \
 		*(v_array-channelParams.Xparam.Vhalf)*channelParams.Xparam.Fday \
                 /(channelParams.Xparam.R*(273.16 + channelParams.Xparam.T))))
 	print alpha
-	beta = (channelParams.Xparam.alpha_0*np.exp((0.001)*(1-channelParams.Xparam.a) \
+	beta = (channelParams.Xparam.alpha_0*np.exp((1-channelParams.Xparam.a) \
 	       *channelParams.Xparam.z*(v_array-channelParams.Xparam.Vhalf)*channelParams.Xparam.Fday/ \
                (channelParams.Xparam.R*(273.16 + channelParams.Xparam.T))))
 	print beta
@@ -219,14 +219,14 @@ def createChanProto(libraryName, channelParams, rateParams, CaParams = None, HCN
 	b = q10*beta
 	inf_x = a/(a+b)
 	tau_x = 1/(a+b)
-	for i in tau_x:
-	    if i < 2:
-		i = 2
-	    else:
-		i
+	#for i in tau_x:
+	#    if i < 2:
+	#	i = 2
+	#    else:
+	#	i
 
-	xGate.tableA = inf_x / tau_x
-	xGate.tableB = 1 /tau_x
+	xGate.tableA = inf_x
+	xGate.tableB = tau_x
 	print channelParams.Xpow
     
     # Define the inactivation gating kinetics if they exist    
@@ -270,11 +270,20 @@ def createChanLib(libraryName, channelSet, rateParams, CaParams, HCNParams):
     for params in channelSet.values():
         chan = createChanProto(libraryName, params, rateParams, CaParams, HCNParams)
 
+# Function that will add one channel to a compartment, which can be called in a loop for all
+# channels provided
+def addOneChan(library_name, channelName, conductance, compName):
+    SA = np.pi*compName.length*compName.diameter
+    proto = moose.element(library_name + '/' + channelName)
+    chan = moose.copy(proto, compName, channelName)[0]
+    chan.Gbar = conductance*SA
+    m = moose.connect(chan, 'channel', compName, 'channel')
+
 # Function that will create a multi-compartment model in MOOSE from a .p or .swc file
 def createMultiCompCell(file_name, container_name, library_name, comp_type, channelSet, condSet,
                         rateParams, CaParams = None, CaPoolParams = None, HCNParams = None,
 			cell_RM = None, cell_CM = None, cell_RA = None, cell_initVm = None, 
-			cell_Em = None):
+			cell_Em = None, dist_dep = False):
     # Create the channel types and store them in a library to be used by each compartment
     # in the model
     createChanLib(library_name, channelSet, rateParams, CaParams, HCNParams)
@@ -299,20 +308,37 @@ def createMultiCompCell(file_name, container_name, library_name, comp_type, chan
     else:
         cell = moose.loadModel(file_name, container_name)
         setCompParameters(cell, comp_type, cell_RM, cell_CM, cell_RA, cell_initVm, cell_Em)
-        for comp in moose.wildcardFind(cell.path + '/' + '#[TYPE=' + comp_type + ']'):
-            for chan_name, cond in condSet.items():
-                SA = np.pi*comp.length*comp.diameter
-                proto = moose.element(library_name + '/' + chan_name)
-                chan = moose.copy(proto, comp, chan_name)[0]
-                chan.Gbar = cond*SA
-                m = moose.connect(chan, 'channel', comp, 'channel')
-        # Add the calcium pool to each compartment in the cell if it has been specified
-        if (CaPoolParams != None):
-	    add_calcium(library_name, cell, CaPoolParams, comp_type)
-	    for key in channelSet.keys():
-	        if ("Ca" in key):
-		    connect_cal2chan(channelSet[key].name, channelSet[key].chan_type, cell,
-                    		     CaPoolParams.caName, comp_type)
+	if (dist_dep == False):
+            for comp in moose.wildcardFind(cell.path + '/' + '#[TYPE=' + comp_type + ']'):
+                for chan_name, cond in condSet.items():
+                    SA = np.pi*comp.length*comp.diameter
+                    proto = moose.element(library_name + '/' + chan_name)
+                    chan = moose.copy(proto, comp, chan_name)[0]
+                    chan.Gbar = cond*SA
+                    m = moose.connect(chan, 'channel', comp, 'channel')
+            # Add the calcium pool to each compartment in the cell if it has been specified
+            if (CaPoolParams != None):
+	        add_calcium(library_name, cell, CaPoolParams, comp_type)
+	        for key in channelSet.keys():
+	            if ("Ca" in key):
+		        connect_cal2chan(channelSet[key].name, channelSet[key].chan_type, cell,
+                    		         CaPoolParams.caName, comp_type)
+	# Work in progress code for distance dependent conductance
+	if (dist_dep == True):
+	    for comp in moose.wildcardFind(cell.path + '/' + '#[TYPE=' + comp_type + ']'):
+	        distance = np.sqrt(comp.x*comp.x + comp.y*comp.y + comp.z*comp.z)
+                for chan_name, cond in condSet.items():
+		    for dist,cond in condSet.items():
+		        if (dist[0] <= distance < dist[1]):                          
+                            conductance = cond
+		    addOneChan(library_name, chan_name, conductance, comp)   
+            # Add the calcium pool to each compartment in the cell if it has been specified
+            if (CaPoolParams != None):
+	        add_calcium(library_name, cell, CaPoolParams, comp_type)
+	        for key in channelSet.keys():
+	            if ("Ca" in key):
+		        connect_cal2chan(channelSet[key].name, channelSet[key].chan_type, cell,
+                    		         CaPoolParams.caName, comp_type)
     return cell
 
 # Function that will add excitatory or inhibitory synchans (with a SimpleSynHandler) to a single or
@@ -350,10 +376,10 @@ def createRandSpike(spikeParams, synHandler):
 
 
 # Function that will allow for the use of the hsolve implicit numerical method (credit: moose_nerp)
-def hsolve(morph_path, soma_name, simdt):
-    hsolve = moose.HSolve(morph_path + '/hsolve')
+def hsolve(soma, simdt):
+    hsolve = moose.HSolve(soma.parent.path + '/hsolve')
     hsolve.dt = simdt
-    hsolve.target = morph_path + '/' + soma_name
+    hsolve.target = soma.path
 
 # Function that will allow for acquiring the distance of a compartment from the soma (credit: moose_nerp)
 def get_dist_name(comp):

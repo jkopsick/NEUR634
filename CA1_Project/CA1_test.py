@@ -8,22 +8,23 @@ from chan_proto_part1 import chan_set, rateParams, HCNParams
 
 plt.ion()
 
-# Import hyperpolarization activated current from Ascoli, which takes into account the form for the 
-# channel that is utilized in the Golding/Spruston/Kath paper (Magee 1998 channel)
-#nmlchannelfile = 'CA1_cell'
-#reader = moose.mooseReadNML2(nmlchannelfile)
-
 # Define the variables needed for the creation of the compartments and pulse
-EREST_ACT = -70e-3 #: Resting membrane potential
-RM = 1/(0.3e-3*1e4)
-CM = 1e-6*1e4
-RA = 1
+EREST_ACT = -67e-3 #: Resting membrane potential
+#RM = 1/(0.3e-3*1e4)
+RM = 4
+#CM = 1e-6*1e4
+CM = 1.0153e-6*1e4
+#RA = 1
+RA = 2.5
 Em = EREST_ACT + 10.613e-3
 initVm = EREST_ACT
-cond_set = {'Na': 0*10000, 'K': 0*2500, 'HCN' : 20e-3*1e4}
+cond_set = {'Na': 0*10000, 'K': 0*2500, 'HCN' : 8e-9*1e12}
+#cond_set = {'Na': {(0, 30e-6): 120e-3*1e4, (30e-6, 1) : 0e-3*1e-4}, 
+#	    'K': {(0, 30e-6): 0e-3*1e4, (30e-6, 1) : 0e-3*1e-4}, 
+#	    'HCN' : {(0, 30e-6): 2e-9*1e12, (30e-6, 1) : 8e-9*1e12}}
 pulse_dur = 400e-3
 pulse_amp = -50e-12
-pulse_delay1 = 20e-3
+pulse_delay1 = 0e-3
 pulse_delay2 = 1e9
 
 # Load a multi-compartment model into MOOSE and give it channels
@@ -33,7 +34,8 @@ libraryName = '/library'
 compType = 'Compartment'
 CA1_cell = u.createMultiCompCell(swcfile, container, libraryName, compType, 					 chan_set, cond_set, rateParams, CaParams = None,
 				 CaPoolParams = None, HCNParams = HCNParams, cell_RM = RM, 
-				 cell_CM = CM, cell_RA = RA, cell_initVm = initVm, cell_Em = Em)
+				 cell_CM = CM, cell_RA = RA, cell_initVm = initVm, cell_Em = initVm,
+				 dist_dep = False)
 
 # Define the variables needed to view the undelying curves for the channel kinetics
 plot_powers = True
@@ -53,8 +55,8 @@ for chan in channelList:
 # work properly)
 CA1_cell = moose.wildcardFind('/CA1_cell/#[TYPE=Compartment]')
 
-# Acquire the distance and the name of each compartment relative to the soma, and place them into
-# a list to be used in the distance-dependent conductance
+# Acquire the distance and the name of each compartment relative to the origin, and place them into
+# a list to be used in the distance-dependent conductance. Origin is close to the soma (soma is 4 um away)
 nameList = []
 distList = []
 
@@ -73,6 +75,10 @@ indexMinDist = distList2[1].index(minDist)
 indexMaxDist = distList2[1].index(maxDist)
 nameMinDist = distList2[0][indexMinDist]
 nameMaxDist = distList2[0][indexMaxDist]
+
+# Implementing distance-dependent conductance (work in progress)
+dend = []
+
 
 # Get all the compartments that have a name of dend
 [x for x in distList2[0] if "dend" in x]
@@ -100,7 +106,7 @@ CA1_ap_167_86_Iex = CA1_tables[7500][1]
 
 # Plot the simulation
 simTime = 600e-3
-simdt = 25e-5
+simdt = 2.5e-5
 plotdt = 0.25e-3
 for i in range(10):
     moose.setClock(i, simdt)
@@ -108,7 +114,7 @@ for i in range(10):
 moose.setClock(8, plotdt)
 
 # Use the hsolve method for the experiment
-u.hsolve(CA1_cell[0].parent.path, CA1_cell[0].path, simdt)
+u.hsolve(CA1_cell[0], simdt)
 moose.reinit()
 moose.start(simTime)
 plt.figure()
