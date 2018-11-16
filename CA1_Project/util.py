@@ -122,7 +122,7 @@ ChannelSettings = namedtuple('ChannelSettings', 'Xpow Ypow Zpow Erev name Xparam
 
 CadepParamSettings = namedtuple('CadepParams', 'Kd power tau')
 
-HCNParamSettings = namedtuple('HCNParams', 'alpha_0 a z Vhalf Fday R T')
+HCNParamSettings = namedtuple('HCNParams', 'alpha_0 a z Vhalf exp_temp sim_temp q10')
 
 CaPoolSettings = namedtuple('CaPoolSettings', 'CaBasal CaThick CaTau BufCapacity caName')
 
@@ -178,7 +178,7 @@ def add_calcium(libraryName, cellname, CaPoolParams, comp_type):
         capool.B = 1/(Fday*vol*2)/CaPoolParams.BufCapacity
     return
 # Function that will create from the biophysics defined for a channel a MOOSE channel
-def createChanProto(libraryName, channelParams, rateParams, CaParams = None, HCNParams = None):
+def createChanProto(libraryName, channelParams, rateParams, CaParams = None):
     # Create a library to store the channel prototypes
     if not moose.exists(libraryName):
         lib = moose.Neutral(libraryName)
@@ -200,27 +200,25 @@ def createChanProto(libraryName, channelParams, rateParams, CaParams = None, HCN
 
     # Define custom activation gating kinetics if they exist (Hyperpolarized channel kinetics)
     if channel.Xpower > 0 and 'HCN' in channelParams.name :
-	FbyRT=channelParams.Xparam.Fday/ \
-               (channelParams.Xparam.R*(273.16 + channelParams.Xparam.T))
+	Fday = 9.648e4
+	R = 8.315
+	FbyRT= Fday/ \
+               (R*(273.16 + channelParams.Xparam.sim_temp))
 	channel.Xpower = channelParams.Xpow
         xGate = moose.HHGate(channel.path + '/' + 'gateX')
-	v_array = np.linspace(HCNParams[0], HCNParams[1], HCNParams[2])
-	xGate.min = HCNParams[0]
-	xGate.max = HCNParams[1]
+	v_array = np.linspace(rateParams[1], rateParams[2], rateParams[0]+1)
+	xGate.min = rateParams[1]
+	xGate.max = rateParams[2]
 	# custom equation for HCN gating kinetics
 	alpha = (channelParams.Xparam.alpha_0*np.exp(-channelParams.Xparam.a*channelParams.Xparam.z \
 		*(v_array-channelParams.Xparam.Vhalf)*FbyRT))
 	beta = (channelParams.Xparam.alpha_0*np.exp((1-channelParams.Xparam.a) \
 	       *channelParams.Xparam.z*(v_array-channelParams.Xparam.Vhalf)*FbyRT))
-	q10 = HCNParams[3]**((channelParams.Xparam.T-33)/10)
+	q10 = channelParams.Xparam.q10**((channelParams.Xparam.sim_temp-channelParams.Xparam.exp_temp)/10)
 	inf_x = alpha/(alpha+beta)
 	tau_x = 1/(q10*(alpha+beta))
 	tau_x = [tau_x if tau_x > 2 else 2 for tau_x in tau_x]
 	tau_x = np.array(tau_x)
-	#for i in range(len(tau_x)):
-	#    if tau[i] < 2:
-	#	tau[i] = 2
-
 
 	xGate.tableA = inf_x /tau_x
 	xGate.tableB = 1 / tau_x
@@ -258,7 +256,7 @@ def createChanProto(libraryName, channelParams, rateParams, CaParams = None, HCN
 
 # Function that will create channels using the createChanProto function and place them
 # in a MOOSE library, which will be utilized in adding channels to a particular compartment
-def createChanLib(libraryName, channelSet, rateParams, CaParams, HCNParams):
+def createChanLib(libraryName, channelSet, rateParams, CaParams):
     # Create a library to store the channel prototypes
     if not moose.exists(libraryName):
         lib = moose.Neutral(libraryName)
@@ -267,7 +265,7 @@ def createChanLib(libraryName, channelSet, rateParams, CaParams, HCNParams):
 
     # Add all the channels to the MOOSE library
     for params in channelSet.values():
-        chan = createChanProto(libraryName, params, rateParams, CaParams, HCNParams)
+        chan = createChanProto(libraryName, params, rateParams, CaParams)
 
 # Function that will add one channel to a compartment, which can be called in a loop for all
 # channels provided
@@ -280,12 +278,12 @@ def addOneChan(library_name, channelName, conductance, compName):
 
 # Function that will create a multi-compartment model in MOOSE from a .p or .swc file
 def createMultiCompCell(file_name, container_name, library_name, comp_type, channelSet, condSet,
-                        rateParams, CaParams = None, CaPoolParams = None, HCNParams = None,
+                        rateParams, CaParams = None, CaPoolParams = None,
 			cell_RM = None, cell_CM = None, cell_RA = None, cell_initVm = None, 
 			cell_Em = None, dist_dep = False):
     # Create the channel types and store them in a library to be used by each compartment
     # in the model
-    createChanLib(library_name, channelSet, rateParams, CaParams, HCNParams)
+    createChanLib(library_name, channelSet, rateParams, CaParams)
 
     # Load in the model in question
     if file_name.endswith('.p'):

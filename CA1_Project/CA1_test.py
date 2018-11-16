@@ -4,7 +4,8 @@ import pylab as plt
 import numpy as np
 import util as u
 import plot_channel as pc
-from chan_proto_part1 import chan_set, rateParams, HCNParams
+import random
+from chan_proto_part1 import chan_set, rateParams
 
 plt.ion()
 
@@ -27,13 +28,17 @@ pulse_amp = -50e-12
 pulse_delay1 = 20e-3
 pulse_delay2 = 1e9
 
+# Define dictionaries for the excitatory channel, and the pre-synaptic neuron
+glu = {'name': 'glu', 'Gbar' : 0.1e-9, 'tau1' : 0.2e-3, 'tau2' : 3e-3, 'erev' : 0}
+presyn1 = {'name': 'presyn1', 'rate' : 1, 'refractT' : 1e-3, 'delay' : 5e-3}
+
 # Load a multi-compartment model into MOOSE and give it channels
 swcfile = 'ri04.CNG.swc'
 container = 'CA1_cell'
 libraryName = '/library'
 compType = 'Compartment'
 CA1_cell = u.createMultiCompCell(swcfile, container, libraryName, compType, 					 chan_set, cond_set, rateParams, CaParams = None,
-				 CaPoolParams = None, HCNParams = HCNParams, cell_RM = RM, 
+				 CaPoolParams = None, cell_RM = RM, 
 				 cell_CM = CM, cell_RA = RA, cell_initVm = initVm, cell_Em = initVm,
 				 dist_dep = False)
 
@@ -79,9 +84,34 @@ nameMaxDist = distList2[0][indexMaxDist]
 # Implementing distance-dependent conductance (work in progress)
 dend = []
 
+# Selecting 40 random AMPA synapses to implement that are along the apical dendrite
 
-# Get all the compartments that have a name of dend
-[x for x in distList2[0] if "apical_1_" in x]
+# First create a list of the indexes that contain apical dendrites
+apicalindexList = [i for i, n in enumerate(distList2[0]) if "apical" in n]
+# create a new list that uses the indices of the apicalindexList to get a list of their values
+apicaldistList =[distList[x] for x in apicalindexList]
+# find all apical dendrites that are between 242 and 390 um away from the soma
+apicalpotentialsynList = [x for x in apicaldistList if (x >= 242e-6) & (x <=390e-6)]
+# get the index for these potential dendrites
+apicalpotentialSynListIndex= [i for i, x in enumerate(apicaldistList) if (x >= 242e-6) & (x <=390e-6)]
+# get the names for these potential dendrites
+apicalpotentialnameList = [nameList[x] for x in apicalpotentialSynListIndex]
+
+# pick 40 random values from this list
+randsynList = random.sample(apicalpotentialnameList, 40)
+
+# Add AMPA synapses to each of these random compartments along the apical tree
+synapseHandler = []
+for comp in randsynList:
+    apical = moose.element('/CA1_cell/' + comp)
+    sh = u.addSynChan(apical, glu)
+    synapseHandler.append(sh)
+
+# Connect the presynaptic neuron to each synapse
+presyn = []
+for handle in synapseHandler:
+    presyncell = u.createRandSpike(presyn1, handle)
+    presyn.append(presyncell)
 
 # Create the pulse and apply it to the granule cell's soma
 CA1_soma_pulse = u.createPulse(CA1_cell[0], 'rollingWave', pulse_dur, pulse_amp, 
