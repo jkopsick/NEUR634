@@ -93,6 +93,16 @@ def setCompParameters(compvector,comptype,RM,CM,RA,initVm,E_leak):
 	comp.initVm = initVm
 	comp.Em = E_leak
 
+# Function that will set the parameters for specific compartments in a model neuron
+def setSpecificCompParameters(comp,RM,CM,RA,initVm,E_leak):
+    	SA = np.pi*comp.length*comp.diameter
+	X_area = np.pi*comp.diameter*comp.diameter/4.0
+	comp.Rm = RM/SA
+	comp.Cm = CM*SA
+	comp.Ra = RA*comp.length/X_area
+	comp.initVm = initVm
+	comp.Em = E_leak
+
 # Function that will create a pulse in NEURON
 def createNeuronPulse(compname,pulsename,duration,amplitude,delay):
     pulsename = h.IClamp(compname)
@@ -322,20 +332,26 @@ def createMultiCompCell(file_name, container_name, library_name, comp_type, chan
                     		         CaPoolParams.caName, comp_type)
 	# Work in progress code for distance dependent conductance
 	if (dist_dep == True):
-	    for comp in moose.wildcardFind(cell.path + '/' + '#[TYPE=' + comp_type + ']'):
-	        distance = np.sqrt(comp.x*comp.x + comp.y*comp.y + comp.z*comp.z)
+            for comp in moose.wildcardFind(cell.path + '/' + '#[TYPE=' + comp_type + ']'):
                 for chan_name, cond in condSet.items():
-		    for dist,cond in condSet.items():
-		        if (dist[0] <= distance < dist[1]):                          
-                            conductance = cond
-		    addOneChan(library_name, chan_name, conductance, comp)   
+		    if 'soma' in comp.name:
+		        conductance = cond['soma']
+		    elif 'apical' in comp.name:
+		        conductance = cond['apical']
+		    else:
+			conductance = cond['dend'] 
+                    SA = np.pi*comp.length*comp.diameter
+                    proto = moose.element(library_name + '/' + chan_name)
+                    chan = moose.copy(proto, comp, chan_name)[0]
+                    chan.Gbar = conductance*SA
+                    m = moose.connect(chan, 'channel', comp, 'channel')
             # Add the calcium pool to each compartment in the cell if it has been specified
             if (CaPoolParams != None):
 	        add_calcium(library_name, cell, CaPoolParams, comp_type)
 	        for key in channelSet.keys():
 	            if ("Ca" in key):
 		        connect_cal2chan(channelSet[key].name, channelSet[key].chan_type, cell,
-                    		         CaPoolParams.caName, comp_type)
+                    		         CaPoolParams.caName, comp_type)	
     return cell
 
 # Function that will add excitatory or inhibitory synchans (with a SimpleSynHandler) to a single or
@@ -441,3 +457,21 @@ def show_output(soma_v_vec, dend_v_vec, t_vec, new_fig=True):
     plt.legend(soma_plot + dend_plot, ['soma', 'dend(0.5)'])
     plt.xlabel('time (ms)')
     plt.ylabel('mV')
+
+
+# Work in progress code for distance dependent conductance
+#if (dist_dep == True):
+#	    for comp in moose.wildcardFind(cell.path + '/' + '#[TYPE=' + comp_type + ']'):
+#	        distance = np.sqrt(comp.x*comp.x + comp.y*comp.y + comp.z*comp.z)
+#                for chan_name, cond in condSet.items():
+#		    for dist,cond in condSet.items():
+#		        if (dist[0] <= distance < dist[1]):                          
+#                            conductance = cond
+#		    addOneChan(library_name, chan_name, conductance, comp)   
+            # Add the calcium pool to each compartment in the cell if it has been specified
+#            if (CaPoolParams != None):
+#	        add_calcium(library_name, cell, CaPoolParams, comp_type)
+#	        for key in channelSet.keys():
+#	            if ("Ca" in key):
+#		        connect_cal2chan(channelSet[key].name, channelSet[key].chan_type, cell,
+#                    		         CaPoolParams.caName, comp_type)
