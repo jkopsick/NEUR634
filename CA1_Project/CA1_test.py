@@ -32,14 +32,15 @@ cond_set = {'Na' : {'soma' : 120e-3*1e4, 'dend' : 0e-3*1e4, 'apical' : 0e-3*1e4}
 	    'K' : {'soma' : 36e-3*1e4, 'dend' : 0e-3*1e4, 'apical' : 0e-3*1e4}, 
 	    'HCN' : {'soma' : 0e-12*1e12, 'dend' : 0e-12*1e12, 'apical' : 0e-12*1e12}}
 
-# Set the parameters for the pulse applied to the soma
+# Set the parameters for the pulse applied to the soma (in non-synapse experiments)
 #pulse_dur = 400e-3
 #pulse_amp = -50e-12
 #pulse_delay1 = 20e-3
 #pulse_delay2 = 1e9
 
-# Define a dictionary for the excitatory synapse channel type (AMPA)
-glu = {'name': 'glu', 'Gbar' : 0.1e-9, 'tau1' : 0.2e-3, 'tau2' : 3e-3, 'erev' : 0}
+# Define a dictionary for the excitatory synapse channel type (AMPA) based off of information 
+# provided in Golding et al. Figure 6
+glu = {'name': 'glu', 'Gbar' : 0.1e-9, 'tau1' : 0.5e-3, 'tau2' : 5e-3, 'erev' : 0}
 
 # Create a loop that will create N many pre-synaptic neurons and places them into a dictionary
 N = 40
@@ -116,9 +117,9 @@ apicalindexList = [i for i, n in enumerate(distList2[0]) if "apical" in n]
 apicaldistList =[distList[x] for x in apicalindexList]
 # find all apical dendrites that are between 242 and 390 um away from the soma
 apicalpotentialsynList = [x for x in apicaldistList if (x >= 242e-6) & (x <=390e-6)]
-# get the index for these potential dendrites
-apicalpotentialSynListIndex= [i for i, x in enumerate(apicaldistList) if (x >= 242e-6) & (x <=390e-6)]
-# get the names for these potential dendrites
+# get the index for these potential apical dendrites
+apicalpotentialSynListIndex = [i for i, x in enumerate(distList2[1]) if x in apicalpotentialsynList]
+# get the names for these potential apical dendrites
 apicalpotentialnameList = [nameList[x] for x in apicalpotentialSynListIndex]
 
 # pick 40 random values from this list
@@ -172,7 +173,8 @@ for i in indexforSynPlots:
     synPlotTableNames.append(path)
 
 # Plot the simulation
-simTime = 600e-3
+simTimenonSyn = 600e-3 # simulation time for non-synapse simulations
+simTimeSyn = 100e-3 # simulation time for synapse simulations
 simdt = 10e-6
 plotdt = 0.2e-3
 for i in range(10):
@@ -183,9 +185,9 @@ moose.setClock(8, plotdt)
 # Use the hsolve method for the experiment
 u.hsolve(CA1_cell[0], simdt)
 moose.reinit()
-moose.start(simTime)
+moose.start(simTimeSyn)
 plt.figure()
-t = np.linspace(0,simTime,len(CA1_soma_Vm.vector))
+t = np.linspace(0,simTimeSyn,len(CA1_soma_Vm.vector))
 plt.plot(t,CA1_soma_Vm.vector * 1e3, 'r',label = 'CA1_soma_Vm (mV)')
 plt.plot(t,synPlotTables[0].vector * 1e3, 'k',label = synPlotTableNames[0] + ' (mV)')
 plt.plot(t,synPlotTables[1].vector * 1e3, 'b',label = synPlotTableNames[1] + ' (mV)')
