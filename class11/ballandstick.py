@@ -23,7 +23,7 @@ class BallAndStick(object):
     def define_geometry(self):
         """Set the 3D geometry of the cell."""
         self.soma.L = self.soma.diam = 12.6157 # microns
-        self.dend.L = 200                      # microns
+        self.dend.L = 100                      # microns
         self.dend.diam = 1                     # microns
         self.dend.nseg = 5
         h.define_shape() # Translate into 3D points.

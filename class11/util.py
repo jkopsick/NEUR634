@@ -416,3 +416,36 @@ def show_output(soma_v_vec, dend_v_vec, t_vec, new_fig=True):
     plt.legend(soma_plot + dend_plot, ['soma', 'dend(0.5)'])
     plt.xlabel('time (ms)')
     plt.ylabel('mV')
+
+# Function that will create an Alpha Synapse in NEURON
+def createAsyn(synapse_location, erev, gmax, onset, tau):
+    asyn = h.AlphaSynapse(synapse_location)
+    asyn.e = erev
+    asyn.gmax = gmax
+    asyn.onset = onset
+    asyn.tau = tau
+    return asyn
+
+# Function that will create an ESyn in NEURON
+def createEsyn(synapse_location, erev=0, tau=0.1):
+    esyn = h.ExpSyn(synapse_location)
+    esyn.e = erev
+    esyn.tau = tau
+    return esyn
+
+# Function that will create a NetStim object (equivalent to RandSpike in MOOSE) in NEURON
+def createNetStim(stim_number, stim_start, stim_length):
+    stim = h.NetStim()
+    stim.number = stim_number
+    stim.start = stim_start
+    stim.interval = stim_length
+    return stim
+
+# Function that will connect a NetStim object to a synapse (created with an AlphaSynapse or Esyn)
+# via the NetCon object (essentially both a MOOSE synase, MOOSE connect, and MOOSE spikegen all in one)
+# in NEURON
+def connectNetStim(stim, synapse, delay, weight):
+    netcon = h.NetCon(stim, synapse)
+    netcon.delay = delay
+    netcon.weight[0] = weight
+    return netcon
