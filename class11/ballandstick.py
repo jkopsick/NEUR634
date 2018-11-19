@@ -25,7 +25,7 @@ class BallAndStick(object):
         self.soma.L = self.soma.diam = 12.6157 # microns
         self.dend.L = 100                      # microns
         self.dend.diam = 1                     # microns
-        self.dend.nseg = 5
+        self.dend.nseg = 101
         h.define_shape() # Translate into 3D points.
     #
     def define_biophysics(self):

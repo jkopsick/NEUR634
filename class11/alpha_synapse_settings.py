@@ -1,3 +1,7 @@
+# This file contains settings needed to create and set alpha synapse parameters on the proximal, middle,
+# and distal dendrite. It is no longer needed for HW 11 after the assignment was updated, but this code
+# may be useful in future HW assignments involving NEURON
+
 # Import the modules needed to run the simulation in NEURON
 from neuron import h, gui
 import ballandstick as bs
@@ -26,39 +30,3 @@ asyn_dist_erev = 0
 ayn_dist_gmax = 0
 asyn_dist_onset = 20
 asyn_dist_tau = 1
-
-# Set the Esyn parameters to be utilized for the simulation
-esyn_prox_loc = cell.dend(0.1)
-esyn_prox_erev = 0
-esyn_prox_tau = 0.1
-
-esyn_mid_loc = cell.dend(0.5)
-esyn_mid_erev = 0
-esyn_mid_tau = 0.1
-
-esyn_dist_loc = cell.dend(0.9)
-esyn_dist_erev = 0
-esyn_dist_tau = 0.1
-
-# NetStim parameters set to ones that were utilized in class and stated in HW
-prox_stim_num = 1
-prox_stim_start = 5
-prox_stim_length = 1
-
-mid_stim_num = 1
-mid_stim_start = 5
-mid_stim_length = 1
-
-dist_stim_num = 1
-dist_stim_start = 5
-dist_stim_length = 1
-
-# NetCon parameters set to ones that were utilized in class
-prox_netcon_delay = 5
-prox_netcon_weight = 0.04
-
-mid_netcon_delay = 5
-mid_netcon_weight = 0.04
-
-dist_netcon_delay = 5
-dist_netcon_weight = 0.04
