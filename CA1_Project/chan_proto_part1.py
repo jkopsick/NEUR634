@@ -65,8 +65,8 @@ K_param = u.ChannelSettings(Xpow = 4, Ypow = 0, Zpow = 0, Erev = -12e-3 + EREST_
                             chan_type = [])
 
 HCN_param = u.ChannelSettings(Xpow = 1, Ypow = 0, Zpow = 0, Erev = -25e-3, name = 'HCN',
-                            Xparam = HCN_n_params, Yparam = [], Zparam = [],
-                            chan_type = [])
+                              Xparam = HCN_n_params, Yparam = [], Zparam = [],
+                              chan_type = [])
 
 
 #: We define the rate parameters, which are functions of Vm as

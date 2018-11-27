@@ -48,6 +48,7 @@ def createDataTables(compname,data_hierarchy,pulsename=None):
     comp_path = compname.path.split('/')[-1]
     comp_path = comp_path.strip(']')
     comp_path = comp_path.replace('[','')
+    comp_path = comp_path[:-1]
     # Create the unique membrane potential table and connect this to the compartment
     Vmtab = moose.Table(data_hierarchy.path + '/' + comp_path + '_Vm')
     moose.connect(Vmtab, 'requestOut', compname, 'getVm')
@@ -81,6 +82,15 @@ def discretize(modelLoc,numComps,length,radius,RM,CM,RA,Em):
         moose.connect(compArray[i],'axialOut',compArray[i+1],'handleAxial')
     return compArray
 
+# Function that will allow for acquiring the distance of a compartment from the soma (credit: moose_nerp)
+def get_dist_name(comp):
+    name = comp.name
+    xloc = comp.x
+    yloc = comp.y
+    zloc = comp.z
+    dist = np.sqrt(xloc*xloc+yloc*yloc+zloc*zloc)
+    return dist,name
+
 # Function that will set the parameters for all compartments in a model neuron
 def setCompParameters(compvector,comptype,RM,CM,RA,initVm,E_leak):
     # Loop through all the compartments in the vector
@@ -98,6 +108,19 @@ def setSpecificCompParameters(comp,RM,CM,RA,initVm,E_leak):
     	SA = np.pi*comp.length*comp.diameter
 	X_area = np.pi*comp.diameter*comp.diameter/4.0
 	comp.Rm = RM/SA
+	comp.Cm = CM*SA
+	comp.Ra = RA*comp.length/X_area
+	comp.initVm = initVm
+	comp.Em = E_leak
+
+# Function that will set up compartment with non uniform membrane resistance
+def setSpecificCompParametersNonUniform(comp,RM_soma,RM_end,RM_halfdist,RM_slope,CM,RA,initVm,E_leak):
+    	SA = np.pi*comp.length*comp.diameter
+	X_area = np.pi*comp.diameter*comp.diameter/4.0
+	dist, _ = get_dist_name(comp)
+	dist = dist*1e6 # convert length so that it is amenable to non-uniform equation
+	RM_point=RM_end+(RM_soma-RM_end)/(1+np.exp((dist-RM_halfdist)/RM_slope))
+	comp.Rm = RM_point/SA
 	comp.Cm = CM*SA
 	comp.Ra = RA*comp.length/X_area
 	comp.initVm = initVm
@@ -394,14 +417,6 @@ def hsolve(soma, simdt):
     hsolve.dt = simdt
     hsolve.target = soma.path
 
-# Function that will allow for acquiring the distance of a compartment from the soma (credit: moose_nerp)
-def get_dist_name(comp):
-    name = comp.name
-    xloc = comp.x
-    yloc = comp.y
-    zloc = comp.z
-    dist = np.sqrt(xloc*xloc+yloc*yloc+zloc*zloc)
-    return dist,name
 
 # some neuron utilities for plotting synapses and networks
 def attach_current_clamp(cell, delay=5, dur=1, amp=.1, loc=1):
@@ -457,6 +472,8 @@ def show_output(soma_v_vec, dend_v_vec, t_vec, new_fig=True):
     plt.legend(soma_plot + dend_plot, ['soma', 'dend(0.5)'])
     plt.xlabel('time (ms)')
     plt.ylabel('mV')
+
+
 
 
 # Work in progress code for distance dependent conductance
