@@ -21,14 +21,14 @@ plt.ion()
 #Em = EREST_ACT + 10.613e-3
 #initVm = EREST_ACT
 
-EREST_ACT = -64.5e-3 #: Resting membrane potential
+EREST_ACT = -69e-3 #: Resting membrane potential
 RM_soma = 6.29013 # for somatic compartments RM (uniform)
 RM = 3.988*1.54 # for non somatic compartments RM (uniform)
 RM_end = 3.1916 # for non somatic compartments RM (uniform)
 RM_halfdist= 100.05
 RM_slope= 50.48
 CM_soma = 1.06e-6*1e4 # for somatic compartments CM (uniform)
-CM = (1.06e-6*1e4)/1.54 # for non somatic compartments CM (uniform)
+CM = (1.06e-6*1e4)*1.54 # for non somatic compartments CM (uniform)
 RA_soma = 2.18 # for non somatic compartments RA (uniform)
 RA = 2.18 # for non somatic compartments RA (uniform)
 Em = EREST_ACT + 10.613e-3
@@ -48,7 +48,7 @@ cond_set = {'Na' : {'soma' : 0e-3*1e4, 'dend' : 0e-3*1e4, 'apical' : 0e-3*1e4},
 # Set the parameters for the pulse applied to the soma (in non-synapse experiments)
 pulse_dur = 400e-3
 pulse_amp = -30e-12
-pulse_delay1 = 30e-3
+pulse_delay1 = 0e-3
 pulse_delay2 = 1e9
 
 # Define a dictionary for the excitatory synapse channel type (AMPA) based off of information 
@@ -135,7 +135,7 @@ for comp in nameList:
         chan = moose.copy(proto, comp, chan_name)[0]
 	dist = dist*1e6
 	hpoint=minq+(maxq-minq)/(1+np.exp(-(dist-qhalfdis)/qsteep))
-        chan.Gbar = hpoint*SA
+        chan.Gbar = hpoint*SA*0
         m = moose.connect(chan, 'channel', comp, 'channel')
 
 # Selecting 40 random AMPA synapses to implement that are along the apical dendrite

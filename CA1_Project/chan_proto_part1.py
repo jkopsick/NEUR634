@@ -50,7 +50,7 @@ K_n_params = u.AlphaBetaChanParams(1e4 * (10e-3 + EREST_ACT),   #  'A_A':
                80e-3                       #  'B_F':  
                )
 
-HCN_n_params = u.HCNParamSettings(alpha_0=0.00057, a=0.4, z=7, Vhalf=-81e-3,
+HCN_n_params = u.HCNParamSettings(alpha_0=0.00057*1e3, a=0.4, z=7, Vhalf=-81e-3,
 				  exp_temp = 33, sim_temp = 35, q10 = 4.5)
 
 

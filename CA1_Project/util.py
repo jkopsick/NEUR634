@@ -250,7 +250,7 @@ def createChanProto(libraryName, channelParams, rateParams, CaParams = None):
 	q10 = channelParams.Xparam.q10**((channelParams.Xparam.sim_temp-channelParams.Xparam.exp_temp)/10)
 	inf_x = alpha/(alpha+beta)
 	tau_x = 1/(q10*(alpha+beta))
-	tau_x = [tau_x if tau_x > 2 else 2 for tau_x in tau_x]
+	tau_x = [tau_x if tau_x > 2e-3 else 2e-3 for tau_x in tau_x]
 	tau_x = np.array(tau_x)
 
 	xGate.tableA = inf_x /tau_x
