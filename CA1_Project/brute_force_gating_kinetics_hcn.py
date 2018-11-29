@@ -36,11 +36,11 @@ tau = [tau if tau > 2 else 2 for tau in tau]
 tau = np.array(tau)
 
 plt.figure()
-plt.plot(varray,inf)
-plt.plot(varray,inf2)
+plt.plot(varray,inf, 'r')
+plt.plot(varray,inf2, 'b')
 plt.figure()
-plt.plot(varray,tau)
-plt.plot(varray, tau2)
+plt.plot(varray,tau, 'r')
+plt.plot(varray, tau2, 'b')
 
 plt.figure()
 plt.plot(varray,inf/tau)

@@ -64,7 +64,7 @@ K_param = u.ChannelSettings(Xpow = 4, Ypow = 0, Zpow = 0, Erev = -12e-3 + EREST_
                             Xparam = K_n_params, Yparam = [], Zparam = [],
                             chan_type = [])
 
-HCN_param = u.ChannelSettings(Xpow = 1, Ypow = 0, Zpow = 0, Erev = -25e-3, name = 'HCN',
+HCN_param = u.ChannelSettings(Xpow = 1, Ypow = 0, Zpow = 0, Erev = -13e-3, name = 'HCN',
                               Xparam = HCN_n_params, Yparam = [], Zparam = [],
                               chan_type = [])
 
@@ -76,7 +76,7 @@ VMIN = -30e-3 + EREST_ACT
 #: Maximum x-value for the interpolation table
 VMAX = 120e-3 + EREST_ACT
 #: Number of divisions in the interpolation table
-VDIVS = 3400
+VDIVS = 10000
 
 # Creation of the channels and placing them into a specified MOOSE library
 chan_set = {'Na': Na_param, 'K': K_param, 'HCN' : HCN_param}

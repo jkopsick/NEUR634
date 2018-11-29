@@ -120,7 +120,7 @@ def setSpecificCompParametersNonUniform(comp,RM_soma,RM_end,RM_halfdist,RM_slope
 	dist, _ = get_dist_name(comp)
 	dist = dist*1e6 # convert length so that it is amenable to non-uniform equation
 	RM_point=RM_end+(RM_soma-RM_end)/(1+np.exp((dist-RM_halfdist)/RM_slope))
-	comp.Rm = RM_point/SA
+	comp.Rm = (RM_point/SA)
 	comp.Cm = CM*SA
 	comp.Ra = RA*comp.length/X_area
 	comp.initVm = initVm
@@ -250,7 +250,7 @@ def createChanProto(libraryName, channelParams, rateParams, CaParams = None):
 	q10 = channelParams.Xparam.q10**((channelParams.Xparam.sim_temp-channelParams.Xparam.exp_temp)/10)
 	inf_x = alpha/(alpha+beta)
 	tau_x = 1/(q10*(alpha+beta))
-	tau_x = [tau_x if tau_x > 2e-3 else 2e-3 for tau_x in tau_x]
+	#tau_x = [tau_x if tau_x > 2e-3 else 2e-3 for tau_x in tau_x]
 	tau_x = np.array(tau_x)
 
 	xGate.tableA = inf_x /tau_x

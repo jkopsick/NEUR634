@@ -7,21 +7,54 @@ import plot_channel as pc
 import random # to create random synapses to connect randSpikes to
 import copy # to create n copies of the synapse dictionary
 from chan_proto_part1 import chan_set, rateParams
+from moose.neuroml.NeuroML import NeuroML
+#import spine_scale_list as ssl
 
 plt.ion()
 
-# Define the variables needed for the creation of the compartments and pulse
-#EREST_ACT = -69e-3 #: Resting membrane potential
-#RM_soma = 3.988 # for somatic compartments RM (uniform)
-#RM = 3.988*1.54 # for non somatic compartments RM (uniform)
-#CM_soma = 1.0153e-6*1e4 # for somatic compartments CM (uniform)
-#CM = (1.0153e-6*1e4)/1.54 # for non somatic compartments CM (uniform)
-#RA_soma = 2.61 # for non somatic compartments RA (uniform)
-#RA = 2.61*1.54 # for non somatic compartments RA (uniform)
-#Em = EREST_ACT + 10.613e-3
-#initVm = EREST_ACT
+# Primary apical list
+prim_apical = [
+'somaA',
+'dendA5_0',
+'dendA5_01',
+'dendA5_011',
+'dendA5_0111',
+'dendA5_01111',
+'dendA5_011111',
+'dendA5_0111111',
+'dendA5_01111111',
+'dendA5_011111111',
+'dendA5_0111111111',
+'dendA5_01111111111',
+'dendA5_011111111111',
+'dendA5_0111111111111',
+'dendA5_01111111111111',
+'dendA5_011111111111111',
+'dendA5_0111111111111111',
+'dendA5_01111111111111111',
+'dendA5_011111111111111111',
+'dendA5_0111111111111111111',
+'dendA5_01111111111111111111',
+'dendA5_011111111111111111111',
+'dendA5_0111111111111111111111',
+'dendA5_01111111111111111111111',
+'dendA5_011111111111111111111111',
+'dendA5_0111111111111111111111111',
+'dendA5_01111111111111111111111111',
+'dendA5_011111111111111111111111111',
+'dendA5_0111111111111111111111111111']
 
-EREST_ACT = -69e-3 #: Resting membrane potential
+
+
+
+
+filename = 'CA1_nrn_morph_nobiophys.xml'
+neuromlR = NeuroML()
+neuromlR.readNeuroMLFromFile(filename)
+#reader = moose.mooseReadNML2(filename)
+
+
+EREST_ACT = -62e-3 #: Resting membrane potential
 RM_soma = 6.29013 # for somatic compartments RM (uniform)
 RM = 3.988/1.54 # for non somatic compartments RM (uniform)
 RM_end = 3.1916 # for non somatic compartments RM (uniform)
@@ -31,13 +64,10 @@ CM_soma = 1.0595e-6*1e4 # for somatic compartments CM (uniform)
 CM = (1.0595e-6*1e4)*1.54 # for non somatic compartments CM (uniform)
 RA_soma = 2.18 # for non somatic compartments RA (uniform)
 RA = 2.18 # for non somatic compartments RA (uniform)
-Em = EREST_ACT + 10.613e-3
 initVm = EREST_ACT
 
-#cond_set = {'Na': 120e-3*1e4, 'K': 36e-3*1e4, 'HCN' : 0e-9*1e12}
-#cond_set = {'Na': {(0, 30e-6): 120e-3*1e4, (30e-6, 1) : 0e-3*1e-4}, 
-#	    'K': {(0, 30e-6): 0e-3*1e4, (30e-6, 1) : 0e-3*1e-4}, 
-#	    'HCN' : {(0, 30e-6): 2e-9*1e12, (30e-6, 1) : 8e-9*1e12}}
+libraryName = '/library'
+u.createChanLib(libraryName,chan_set,rateParams,CaParams=None)
 
 # Set of conductances that are being placed non-uniformly but in a discrete fashion for the different
 # compartment types in the CA1 morphology. Values have been multipled to reflect conversion from
@@ -47,7 +77,7 @@ cond_set = {'Na' : {'soma' : 0e-3*1e4, 'dend' : 0e-3*1e4, 'apical' : 0e-3*1e4},
 
 # Set the parameters for the pulse applied to the soma (in non-synapse experiments)
 pulse_dur = 400e-3
-pulse_amp = -30e-12
+pulse_amp = -50e-12
 pulse_delay1 = 30e-3
 pulse_delay2 = 1e9
 
@@ -61,15 +91,6 @@ dict = {}
 for i in range(1,N+1):
     dict[i] = {'name': 'presyn_' + str(i), 'rate' : 1, 'refractT' : 1e-3, 'delay' : 5e-3}
 
-# Load a multi-compartment model into MOOSE and give it channels
-swcfile = 'ri04.CNG.swc'
-container = 'CA1_cell'
-libraryName = '/library'
-compType = 'Compartment'
-CA1_cell = u.createMultiCompCell(swcfile, container, libraryName, compType, 					 chan_set, cond_set, rateParams, CaParams = None,
-				 CaPoolParams = None, cell_RM = RM, 
-				 cell_CM = CM, cell_RA = RA, cell_initVm = initVm, cell_Em = initVm,
-				 dist_dep = True)
 
 # Define the variables needed to view the undelying curves for the channel kinetics
 plot_powers = True
@@ -87,7 +108,7 @@ for chan in channelList:
 # Re-create the python variable pointing to the gran_cell to limit results just to 
 # type compartment (excludes the spines and allows for createDataTables function to
 # work properly)
-CA1_cell = moose.wildcardFind('/CA1_cell/#[TYPE=Compartment]')
+CA1_cell = moose.wildcardFind('/library/somaA/#[TYPE=Compartment]')
 
 # Acquire the distance and the name of each compartment relative to the origin, and place them into
 # a list to be used in the distance-dependent conductance. Origin is close to the soma (soma is 4 um away)
@@ -103,18 +124,29 @@ distList2 = []
 distList2.append(nameList)
 distList2.append(distList)
 
+# Create a list of lists of all compartments that are a part of the primary apical dendrite
+# Still need to 
+prim_ap_name_list = []
+for i in prim_apical:
+    name_index = [j for j, n in enumerate(distList2[0]) if i in n]
+    names = [nameList[x] for x in name_index]
+    prim_ap_name_list.append(names)
+
+# Grab all the names of the different segment groups that are involved in spine scaling
+
+
 # Work around for now to change the somatic compartments parameters to non spine adjusted values
 somaNameListIndex = [i for i, n in enumerate(distList2[0]) if "soma" in n]
 somaNameList = [nameList[x] for x in somaNameListIndex]
 for soma_comp in somaNameList:
-    comp = moose.element('/CA1_cell/' + soma_comp)
+    comp = moose.element('/library/somaA/' + soma_comp)
     u.setSpecificCompParameters(comp, RM_soma, CM_soma, RA_soma, initVm, initVm)
 
 # Work around for now to change the dendritic compartment parameters to non-uniform values
 dendNameListIndex = [i for i, n in enumerate(distList2[0]) if "soma" not in n]
 dendNameList = [nameList[x] for x in dendNameListIndex]
 for dend_comp in dendNameList:
-    comp = moose.element('/CA1_cell/' + dend_comp)
+    comp = moose.element('/library/somaA/' + dend_comp)
     u.setSpecificCompParametersNonUniform(comp = comp, RM_soma = RM_soma, RM_end = RM_end, 
 					  RM_halfdist = RM_halfdist, RM_slope = RM_slope,
 					  CM = CM, RA = RA, initVm = initVm, E_leak = initVm)
@@ -130,7 +162,7 @@ Hpoints = []
 Gbars = []
 # Work around for now to implement non uniform conductance
 for comp in nameList:
-    comp = moose.element('/CA1_cell/' + comp)
+    comp = moose.element('/library/somaA/' + comp)
     dist, _ = u.get_dist_name(comp)
     for chan_name, cond in cond_set_test.items():
         SA = np.pi*comp.length*comp.diameter
@@ -138,7 +170,7 @@ for comp in nameList:
         chan = moose.copy(proto, comp, chan_name)[0]
 	dist = dist*1e6
 	hpoint=minq+(maxq-minq)/(1+np.exp(-(dist-qhalfdis)/qsteep))
-        chan.Gbar = hpoint*SA*0
+        chan.Gbar = hpoint*SA*1.54
         m = moose.connect(chan, 'channel', comp, 'channel')
 	Hpoints.append(hpoint)
 	Gbars.append(chan.Gbar)
@@ -146,7 +178,7 @@ for comp in nameList:
 # Selecting 40 random AMPA synapses to implement that are along the apical dendrite
 
 # First create a list of the indexes that contain apical dendrites
-apicalindexList = [i for i, n in enumerate(distList2[0]) if "apical" in n]
+apicalindexList = [i for i, n in enumerate(distList2[0]) if "dend" in n]
 # create a new list that uses the indices of the apicalindexList to get a list of their values
 apicaldistList =[distList[x] for x in apicalindexList]
 # find all apical dendrites that are between 242 and 390 um away from the soma
@@ -214,3 +246,4 @@ plt.plot(t,synPlotTables[1].vector * 1e3, 'b',label = synPlotTableNames[1] + ' (
 plt.plot(t,synPlotTables[2].vector * 1e3, 'g',label = synPlotTableNames[2] + ' (mV)')
 plt.xlabel('time (ms)')
 plt.legend()
+
