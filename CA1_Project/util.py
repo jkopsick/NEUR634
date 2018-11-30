@@ -91,6 +91,15 @@ def get_dist_name(comp):
     dist = np.sqrt(xloc*xloc+yloc*yloc+zloc*zloc)
     return dist,name
 
+# Function that will acquire the distance of a compartment from an origin selected by the user
+def get_dist_name_from_soma(comp, origin):
+    name = comp.name
+    xloc = comp.x
+    yloc = comp.y
+    zloc = comp.z
+    dist = np.sqrt((xloc-origin[0])**2+(yloc-origin[1])**2+(zloc-origin[2])**2)
+    return dist,name
+
 # Function that will set the parameters for all compartments in a model neuron
 def setCompParameters(compvector,comptype,RM,CM,RA,initVm,E_leak):
     # Loop through all the compartments in the vector

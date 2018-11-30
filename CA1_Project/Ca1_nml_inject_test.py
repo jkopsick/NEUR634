@@ -8,51 +8,13 @@ import random # to create random synapses to connect randSpikes to
 import copy # to create n copies of the synapse dictionary
 from chan_proto_part1 import chan_set, rateParams
 from moose.neuroml.NeuroML import NeuroML
-#import spine_scale_list as ssl
+import spine_scale_list as ssl
 
 plt.ion()
-
-# Primary apical list
-prim_apical = [
-'somaA',
-'dendA5_0',
-'dendA5_01',
-'dendA5_011',
-'dendA5_0111',
-'dendA5_01111',
-'dendA5_011111',
-'dendA5_0111111',
-'dendA5_01111111',
-'dendA5_011111111',
-'dendA5_0111111111',
-'dendA5_01111111111',
-'dendA5_011111111111',
-'dendA5_0111111111111',
-'dendA5_01111111111111',
-'dendA5_011111111111111',
-'dendA5_0111111111111111',
-'dendA5_01111111111111111',
-'dendA5_011111111111111111',
-'dendA5_0111111111111111111',
-'dendA5_01111111111111111111',
-'dendA5_011111111111111111111',
-'dendA5_0111111111111111111111',
-'dendA5_01111111111111111111111',
-'dendA5_011111111111111111111111',
-'dendA5_0111111111111111111111111',
-'dendA5_01111111111111111111111111',
-'dendA5_011111111111111111111111111',
-'dendA5_0111111111111111111111111111']
-
-
-
-
 
 filename = 'CA1_nrn_morph_nobiophys.xml'
 neuromlR = NeuroML()
 neuromlR.readNeuroMLFromFile(filename)
-#reader = moose.mooseReadNML2(filename)
-
 
 EREST_ACT = -62e-3 #: Resting membrane potential
 RM_soma = 6.29013 # for somatic compartments RM (uniform)
@@ -125,14 +87,140 @@ distList2.append(nameList)
 distList2.append(distList)
 
 # Create a list of lists of all compartments that are a part of the primary apical dendrite
-# Still need to 
 prim_ap_name_list = []
-for i in prim_apical:
-    name_index = [j for j, n in enumerate(distList2[0]) if i in n]
-    names = [nameList[x] for x in name_index]
-    prim_ap_name_list.append(names)
+comp_names = distList2[0]
 
-# Grab all the names of the different segment groups that are involved in spine scaling
+for i in reversed(ssl.prim_apical):
+    name_index = [j for j, n in enumerate(comp_names) if i in n]
+    names = [comp_names[x] for x in name_index]
+    prim_ap_name_list.append(names)
+    comp_names = [x for x in comp_names if x not in names]
+
+s = 0
+for i in prim_ap_name_list:
+    count = len(i)
+    s = s + count
+
+print s
+
+# Create a list of list of all the names that have no spine scaling
+no_spine_name_list = []
+comp_names = distList2[0]
+
+for i in reversed(ssl.no_spine_scale):
+    name_index = [j for j, n in enumerate(comp_names) if i in n]
+    names = [comp_names[x] for x in name_index]
+    no_spine_name_list.append(names)
+    comp_names = [x for x in comp_names if x not in names]
+
+s = 0
+for i in no_spine_name_list:
+    count = len(i)
+    s = s + count
+
+print s
+
+# Create a list of list of all the names that have basal spine scaling
+basal_name_list = []
+comp_names = distList2[0]
+
+for i in reversed(ssl.basal_scale):
+    name_index = [j for j, n in enumerate(comp_names) if i in n]
+    names = [comp_names[x] for x in name_index]
+    basal_name_list.append(names)
+    comp_names = [x for x in comp_names if x not in names]
+
+s = 0
+for i in basal_name_list:
+    count = len(i)
+    s = s + count
+
+print s
+
+# Create a list of list of all the names that have med spine rad scaling
+med_spine_rad_name_list = []
+comp_names = distList2[0]
+
+for i in reversed(ssl.med_spine_rad_scale):
+    name_index = [j for j, n in enumerate(comp_names) if i in n]
+    names = [comp_names[x] for x in name_index]
+    med_spine_rad_name_list.append(names)
+    comp_names = [x for x in comp_names if x not in names]
+
+s = 0
+for i in med_spine_rad_name_list:
+    count = len(i)
+    s = s + count
+
+print s
+
+# Create a list of list of all the names that have med spine LM scaling
+med_spine_LM_name_list = []
+comp_names = distList2[0]
+
+for i in reversed(ssl.med_spine_LM_scale):
+    name_index = [j for j, n in enumerate(comp_names) if i in n]
+    names = [comp_names[x] for x in name_index]
+    med_spine_LM_name_list.append(names)
+    comp_names = [x for x in comp_names if x not in names]
+
+s = 0
+for i in med_spine_LM_name_list:
+    count = len(i)
+    s = s + count
+
+print s
+
+# Create a list of list of all the names that have max spine rad scaling
+max_spine_rad_name_list = []
+comp_names = distList2[0]
+
+for i in reversed(ssl.max_spine_rad_scale):
+    name_index = [j for j, n in enumerate(comp_names) if i in n]
+    names = [comp_names[x] for x in name_index]
+    max_spine_rad_name_list.append(names)
+    comp_names = [x for x in comp_names if x not in names]
+
+s = 0
+for i in max_spine_rad_name_list:
+    count = len(i)
+    s = s + count
+
+print s
+
+# Create a list of list of all the names that have thin rad spine scaling
+thin_rad_name_list = []
+comp_names = distList2[0]
+
+for i in reversed(ssl.thin_rad_spine_scale):
+    name_index = [j for j, n in enumerate(comp_names) if i in n]
+    names = [comp_names[x] for x in name_index]
+    thin_rad_name_list.append(names)
+    comp_names = [x for x in comp_names if x not in names]
+
+s = 0
+for i in thin_rad_name_list:
+    count = len(i)
+    s = s + count
+
+print s
+
+# Create a list of list of all the names that have thin LM spine scaling
+thin_LM_name_list = []
+comp_names = distList2[0]
+
+for i in reversed(ssl.thin_LM_spine_scale):
+    name_index = [j for j, n in enumerate(comp_names) if i in n]
+    names = [comp_names[x] for x in name_index]
+    thin_LM_name_list.append(names)
+    comp_names = [x for x in comp_names if x not in names]
+
+s = 0
+for i in thin_LM_name_list:
+    count = len(i)
+    s = s + count
+
+print s
 
 
 # Work around for now to change the somatic compartments parameters to non spine adjusted values
