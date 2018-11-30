@@ -14,7 +14,7 @@ Authors: Michael Hines, Sushil Kambampati and Padraig Gleeson,
 Yale University and UCL</meta:notes>
 
 <cells>
-  <cell name="somaA">
+  <cell name="CA1">
     <meta:notes>Cell: somaA exported from NEURON ModelView</meta:notes>
     <segments  xmlns="http://morphml.org/morphml/schema"> <!-- Changing the namespace from neuroml to morphml-->
 <!-- Section: somaA which has 30 3D points, so 29 segment(s)-->

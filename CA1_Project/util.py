@@ -94,9 +94,9 @@ def get_dist_name(comp):
 # Function that will acquire the distance of a compartment from an origin selected by the user
 def get_dist_name_from_soma(comp, origin):
     name = comp.name
-    xloc = comp.x
-    yloc = comp.y
-    zloc = comp.z
+    xloc = comp.x0 + (comp.x - comp.x0)/2 # x for center of compartment
+    yloc = comp.y0 + (comp.y - comp.y0)/2 # y for center of compartment
+    zloc = comp.z0 + (comp.z - comp.z0)/2 # z for center of compartment
     dist = np.sqrt((xloc-origin[0])**2+(yloc-origin[1])**2+(zloc-origin[2])**2)
     return dist,name
 
@@ -123,17 +123,42 @@ def setSpecificCompParameters(comp,RM,CM,RA,initVm,E_leak):
 	comp.Em = E_leak
 
 # Function that will set up compartment with non uniform membrane resistance
-def setSpecificCompParametersNonUniform(comp,RM_soma,RM_end,RM_halfdist,RM_slope,CM,RA,initVm,E_leak):
+def setSpecificCompParametersNonUniform(comp,origin,RM_soma,RM_end,RM_halfdist,RM_slope,CM,RA,initVm,E_leak):
     	SA = np.pi*comp.length*comp.diameter
 	X_area = np.pi*comp.diameter*comp.diameter/4.0
-	dist, _ = get_dist_name(comp)
+	dist, _ = get_dist_name_from_soma(comp, origin)
 	dist = dist*1e6 # convert length so that it is amenable to non-uniform equation
 	RM_point=RM_end+(RM_soma-RM_end)/(1+np.exp((dist-RM_halfdist)/RM_slope))
-	comp.Rm = (RM_point/SA)
+	comp.Rm = RM_point/SA
 	comp.Cm = CM*SA
 	comp.Ra = RA*comp.length/X_area
 	comp.initVm = initVm
 	comp.Em = E_leak
+
+# Function that will set up compartments with non uniform conductance
+def setNonUniformConductance(comp_list, cell_path, libraryName, condSet, minq, maxq, qhalfdist,
+			     qslope, origin):
+    for comp in comp_list:
+        comp = moose.element(cell_path + '/' + comp)
+        dist, _ = get_dist_name_from_soma(comp, origin)
+        for chan_name, cond in condSet.items():
+            SA = np.pi*comp.length*comp.diameter
+            proto = moose.element(libraryName + '/' + chan_name)
+            chan = moose.copy(proto, comp, chan_name)[0]
+	    dist = dist*1e6
+	    hpoint=minq+(maxq-minq)/(1+np.exp(-(dist-qhalfdist)/qslope))
+            chan.Gbar = hpoint*SA
+            m = moose.connect(chan, 'channel', comp, 'channel')
+
+# Function that will scale Rm and Cm for a compartment by some scaling factor
+def scaleCompRmCm(comp, scaling_factor):
+    comp.Rm = comp.Rm/scaling_factor
+    comp.Cm = comp.Cm*scaling_factor
+
+
+# Function that will scale the conductance of a channel by some scaling factor
+def scaleChannelCond(chan, scaling_factor):
+    chan.Gbar = chan.Gbar*scaling_factor
 
 # Function that will create a pulse in NEURON
 def createNeuronPulse(compname,pulsename,duration,amplitude,delay):
