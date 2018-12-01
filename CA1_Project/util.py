@@ -147,7 +147,7 @@ def setNonUniformConductance(comp_list, cell_path, libraryName, condSet, minq, m
             chan = moose.copy(proto, comp, chan_name)[0]
 	    dist = dist*1e6
 	    hpoint=minq+(maxq-minq)/(1+np.exp(-(dist-qhalfdist)/qslope))
-            chan.Gbar = hpoint*SA
+            chan.Gbar = hpoint*SA*0
             m = moose.connect(chan, 'channel', comp, 'channel')
 
 # Function that will scale Rm and Cm for a compartment by some scaling factor
