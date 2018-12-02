@@ -97,7 +97,7 @@ nameList = []
 distList = []
 
 for comp in CA1_cell:
-     dist, name = u.get_dist_name(comp)
+     dist, name = u.get_dist_name_from_soma(comp,soma_center)
      nameList.append(name)
      distList.append(dist)
 

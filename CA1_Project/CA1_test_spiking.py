@@ -7,7 +7,7 @@ import plot_channel as pc
 import random # to create random synapses to connect randSpikes to
 import copy # to create n copies of the synapse dictionary
 from itertools import chain # allow for checking of multiple lists at a time
-from chan_proto_part1 import chan_set, rateParams
+from chan_proto_CA1 import chan_set, rateParams
 from moose.neuroml.NeuroML import NeuroML
 import spine_scale_list as ssl
 
@@ -50,11 +50,8 @@ soma_center = [soma_xloc, soma_yloc, soma_zloc]
 # loaded in
 u.createChanLib(libraryName,chan_set,rateParams,CaParams=None)
 
-# Set of conductances that are being placed non-uniformly but in a discrete fashion for the different
-# compartment types in the CA1 morphology. Values have been multipled to reflect conversion from
-# physiological to SI units
-cond_set = {'Na' : {'soma' : 0e-3*1e4, 'dend' : 0e-3*1e4, 'apical' : 0e-3*1e4}, 
-	    'K' : {'soma' : 0e-3*1e4, 'dend' : 0e-3*1e4, 'apical' : 0e-3*1e4}}
+# Declare maximal conductances for the classic HH Na and K Channels which will be placed in the soma
+cond_set = {'Na' : 140*20, 'K' : 70*20}
 
 cond_set_test = {'HCN' : 0e-12*1e12}
 minq=2.1582  		# units are pS/um2
@@ -64,13 +61,13 @@ qslope=50.07
 
 # Define a dictionary for the excitatory synapse channel type (AMPA) based off of information 
 # provided in Golding et al. Figure 6
-glu = {'name': 'glu', 'Gbar' : 0.1e-9, 'tau1' : 0.5e-3, 'tau2' : 5e-3, 'erev' : 0}
+AMPA = {'name': 'AMPA', 'Gbar' : 2e-9, 'tau1' : 1.1e-3, 'tau2' : 5.75e-3, 'erev' : 5e-3}
 
 # Create a loop that will create N many pre-synaptic neurons and places them into a dictionary
-N = 40
+N = 100
 dict = {}
 for i in range(1,N+1):
-    dict[i] = {'name': 'presyn_' + str(i), 'rate' : 1, 'refractT' : 1e-3, 'delay' : 5e-3}
+    dict[i] = {'syn_num' : i, 'name': 'presyn_' + str(i), 'rate' : 20, 'refractT' : 1e-3, 'delay' : 20e-3}
 
 # Define the variables needed to view the undelying curves for the channel kinetics
 plot_powers = True
@@ -121,6 +118,12 @@ for i in reversed(ssl.prim_apical):
     names = [comp_names[x] for x in name_index]
     prim_ap_name_list.append(names)
     comp_names = [x for x in comp_names if x not in names]
+
+# Add HH Na and K channels to somatic compartments
+soma_list = prim_ap_name_list[-1]
+for comp in soma_list:
+    comp = moose.element(cell_path + '/' + comp)
+    u.addChanList(libraryName, cond_set, comp)
 
 # Create a list of list of all the names that have no spine scaling, and then scale all of the compartments
 # Rm, Cm, and Gbar by the spine scaling factor associated with them
@@ -264,17 +267,17 @@ SLM_potential_syn_name_list = [nameList[x] for x in SLM_potential_syn_list_index
 # pick 40 random values from this list
 randsynList = random.sample(SLM_potential_syn_name_list, N)
 
-# Add AMPA synapses to each of these random compartments along the apical tree
+# Add AMPA synapses to each of these random SLM compartments
 synapseHandler = []
 for comp in randsynList:
-    apical = moose.element(cell_path + '/' + comp)
-    sh = u.addSynChan(apical, glu)
+    slm = moose.element(cell_path + '/' + comp)
+    sh = u.addSynChan(slm, AMPA)
     synapseHandler.append(sh)
 
 # Connect the presynaptic neuron to each synapse
 for i in dict.values():
-    for handle in synapseHandler:
-        presyncell = u.createRandSpike(i, handle)
+	shnum = i['syn_num'] - 1 # get the correct index to be used for the synapseHandler
+        presyncell = u.createRandSpike(i, synapseHandler[shnum])
 
 # Create a neutral object to store the data in
 CA1_data = moose.Neutral('/CA1_data')
@@ -287,12 +290,14 @@ CA1_soma_Vm = CA1_tables[0][0]
 
 # Get all the distances associated with the primary apical dendritic tree to be used later for setting up
 # synapses and measuring voltage attenuation
-prim_ap_names = list(chain(*prim_ap_name_list))
+prim_ap_names = list(chain(*prim_ap_name_list)) # unordered list of prim apical dendrite compartments
 prim_ap_names_index = [j for j, n in enumerate(distList2[0]) if n in prim_ap_names]
 prim_ap_dist_list = [distList[x] for x in prim_ap_names_index]
+prim_ap_names = [nameList[x] for x in prim_ap_names_index] # ordered list of prim apical dend compartments
 
-# Choose 3 of the compartments along the primary apical dendrite to monitor voltage attenuation
-primApicalPlotListName = random.sample(prim_ap_names,3)
+# Choose 3 of the compartments along the primary apical dendrite to monitor voltage attenuation. Selective
+# dendrites were chosen at roughly 100 um, 225 um, and 350 um (furthest compartment on primary apical dend)
+primApicalPlotListName = [prim_ap_names[67], prim_ap_names[133], prim_ap_names[215]]
 indexforprimApicalPlots = [x for x, n in enumerate(distList2[0]) if n in primApicalPlotListName]
 
 # Choose voltage tables for apical dendrites you are interested in recording from
@@ -312,7 +317,7 @@ for i in indexforprimApicalPlots:
     primApicalPlotTableNames.append(path)
 
 # Plot the simulation
-simTime = 100e-3 # simulation time for non-synapse simulations
+simTime = 1000e-3 # simulation time for non-synapse simulations
 simdt = 10e-6
 plotdt = 0.1e-3
 for i in range(10):
@@ -330,5 +335,6 @@ plt.plot(t,CA1_soma_Vm.vector * 1e3, 'r',label = 'CA1_soma_Vm (mV)')
 plt.plot(t,primApicalPlotTables[0].vector * 1e3, 'k',label = primApicalPlotTableNames[0] + ' (mV)')
 plt.plot(t,primApicalPlotTables[1].vector * 1e3, 'b',label = primApicalPlotTableNames[1] + ' (mV)')
 plt.plot(t,primApicalPlotTables[2].vector * 1e3, 'g',label = primApicalPlotTableNames[2] + ' (mV)')
-plt.xlabel('time (ms)')
+plt.xlabel('Time (ms)')
+plt.ylabel('Voltage (mV)')
 plt.legend()

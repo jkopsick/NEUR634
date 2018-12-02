@@ -343,6 +343,15 @@ def addOneChan(library_name, channelName, conductance, compName):
     chan.Gbar = conductance*SA
     m = moose.connect(chan, 'channel', compName, 'channel')
 
+# Function that will add a channel set to multiple compartments 
+def addChanList(library_name, condSet, comp):
+    for chan_name, cond in condSet.items():
+        SA = np.pi*comp.length*comp.diameter
+        proto = moose.element(library_name + '/' + chan_name)
+        chan = moose.copy(proto, comp, chan_name)[0]
+        chan.Gbar = cond*SA
+        m = moose.connect(chan, 'channel', comp, 'channel')
+
 # Function that will create a multi-compartment model in MOOSE from a .p or .swc file
 def createMultiCompCell(file_name, container_name, library_name, comp_type, channelSet, condSet,
                         rateParams, CaParams = None, CaPoolParams = None,
