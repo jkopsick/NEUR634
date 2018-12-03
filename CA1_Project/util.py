@@ -138,6 +138,8 @@ def setSpecificCompParametersNonUniform(comp,origin,RM_soma,RM_end,RM_halfdist,R
 # Function that will set up compartments with non uniform conductance
 def setNonUniformConductance(comp_list, cell_path, libraryName, condSet, minq, maxq, qhalfdist,
 			     qslope, origin, sag):
+    Hpoints = []
+    Gbars = []
     for comp in comp_list:
         comp = moose.element(cell_path + '/' + comp)
         dist, _ = get_dist_name_from_soma(comp, origin)
@@ -149,6 +151,9 @@ def setNonUniformConductance(comp_list, cell_path, libraryName, condSet, minq, m
 	    hpoint=minq+(maxq-minq)/(1+np.exp(-(dist-qhalfdist)/qslope))
             chan.Gbar = hpoint*SA*sag
             m = moose.connect(chan, 'channel', comp, 'channel')
+	    Hpoints.append(hpoint)
+	    Gbars.append(chan.Gbar)
+    return Hpoints, Gbars
 
 # Function that will scale Rm and Cm for a compartment by some scaling factor
 def scaleCompRmCm(comp, scaling_factor):

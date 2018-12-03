@@ -21,7 +21,6 @@ plt.ion()
 #Em = EREST_ACT + 10.613e-3
 #initVm = EREST_ACT
 
-EREST_ACT = -69e-3 #: Resting membrane potential
 RM_soma = 6.29013 # for somatic compartments RM (uniform)
 RM = 3.988/1.54 # for non somatic compartments RM (uniform)
 RM_end = 3.1916 # for non somatic compartments RM (uniform)
@@ -31,13 +30,7 @@ CM_soma = 1.0595e-6*1e4 # for somatic compartments CM (uniform)
 CM = (1.0595e-6*1e4)*1.54 # for non somatic compartments CM (uniform)
 RA_soma = 2.18 # for non somatic compartments RA (uniform)
 RA = 2.18 # for non somatic compartments RA (uniform)
-Em = EREST_ACT + 10.613e-3
-initVm = EREST_ACT
-
-#cond_set = {'Na': 120e-3*1e4, 'K': 36e-3*1e4, 'HCN' : 0e-9*1e12}
-#cond_set = {'Na': {(0, 30e-6): 120e-3*1e4, (30e-6, 1) : 0e-3*1e-4}, 
-#	    'K': {(0, 30e-6): 0e-3*1e4, (30e-6, 1) : 0e-3*1e-4}, 
-#	    'HCN' : {(0, 30e-6): 2e-9*1e12, (30e-6, 1) : 8e-9*1e12}}
+initVm = -69e-3 #: Resting membrane potential
 
 # Set of conductances that are being placed non-uniformly but in a discrete fashion for the different
 # compartment types in the CA1 morphology. Values have been multipled to reflect conversion from

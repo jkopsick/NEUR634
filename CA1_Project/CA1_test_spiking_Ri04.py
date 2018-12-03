@@ -25,9 +25,9 @@ RM_halfdist= 100.05
 RM_slope= 50.48
 CM = 1.0595e-6*1e4 # for somatic compartments CM (uniform)
 RA = 2.18 # for non somatic compartments RA (uniform)
-#sag_cond = 1.9359 # sag conductance multiplier as used in NEURON simulation for HCN on
-sag_cond = 0 # sag conductance multiplier as used in NEURON simulation for HCN off
-initVm = -69e-3 #: Resting membrane potential
+sag_cond = 1.9359 # sag conductance multiplier as used in NEURON simulation for HCN on
+#sag_cond = 0 # sag conductance multiplier as used in NEURON simulation for HCN off
+initVm = -62e-3 #: Resting membrane potential
 E_leak = -69e-3
 libraryName = '/library'
 cell_path = '/library/CA1'
@@ -54,7 +54,7 @@ soma_center = [soma_xloc, soma_yloc, soma_zloc]
 u.createChanLib(libraryName,chan_set,rateParams,CaParams=None)
 
 # Declare maximal conductances for the classic HH Na and K Channels which will be placed in the soma
-cond_set = {'Na' : 140*20, 'K' : 70*20}
+cond_set = {'Na' : 2000*5, 'K' : 350*5}
 
 cond_set_test = {'HCN' : 0e-12*1e12}
 minq=2.1582  		# units are pS/um2
@@ -64,26 +64,13 @@ qslope=50.07
 
 # Define a dictionary for the excitatory synapse channel type (AMPA) based off of information 
 # provided in Golding et al. Figure 6
-AMPA = {'name': 'AMPA', 'Gbar' : 1e-9, 'tau1' : 0.5e-3, 'tau2' : 5e-3, 'erev' : 0e-3}
+AMPA = {'name': 'AMPA', 'Gbar' : 10e-9, 'tau1' : 0.5e-3, 'tau2' : 5e-3, 'erev' : 0e-3}
 
 # Create a loop that will create N many pre-synaptic neurons and places them into a dictionary
-N = 100
+N = 200
 dict = {}
 for i in range(1,N+1):
     dict[i] = {'syn_num' : i, 'name': 'presyn_' + str(i), 'rate' : 20, 'refractT' : 1e-3, 'delay' : 5e-3}
-
-# Define the variables needed to view the undelying curves for the channel kinetics
-plot_powers = True
-VMIN = -120e-3
-VMAX = 50e-3
-CAMIN = 0.01e-3
-CAMAX = 40e-3
-channelList = ('Na', 'K', 'HCN')
-
-# Graph the curves
-for chan in channelList:
-        libchan=moose.element(libraryName + '/' + chan)
-        pc.plot_gate_params(libchan,plot_powers, VMIN, VMAX, CAMIN, CAMAX)
 
 # Acquire the distance and the name of each compartment relative to the origin, and place them into
 # a list to be used in the distance-dependent conductance. Origin is close to the soma (soma is 4 um away)
@@ -262,7 +249,7 @@ SLM_dist_list = [distList[x] for x in SLM_names_index]
 
 # find all SLM dendritic compartments that are between 242 and 390 um away from the soma
 #SLM_potential_syn_list = [x for x in SLM_dist_list if (x >= 242e-6) & (x <=390e-6)]
-SLM_potential_syn_list = [x for x in SLM_dist_list if (x >= 500e-6) & (x <=540e-6)]
+SLM_potential_syn_list = [x for x in SLM_dist_list if (x >= 350e-6) & (x <=450e-6)]
 # get the index for these potential SLM dendritic compartments
 SLM_potential_syn_list_index = [i for i, x in enumerate(distList2[1]) if x in SLM_potential_syn_list]
 # get the names for these potential SLM dendritic compartments
