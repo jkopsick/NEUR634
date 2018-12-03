@@ -36,3 +36,24 @@ hpoint=minq+(maxq-minq)/(1+np.exp(-(dis-qhalfdis)/qsteep))
 
 plt.figure()
 plt.plot(dis,hpoint)
+
+rmsoma3= 7.4697
+rmend3=1.0216
+rmhalfdis3= 115.07
+rmsteep3= 20
+dis3 = np.linspace(0,610,5001)
+rmpoint3=rmend3+(rmsoma3-rmend3)/(1+np.exp((dis3-rmhalfdis3)/rmsteep3))
+
+plt.figure()
+plt.plot(dis3,rmpoint3)
+
+
+minq=0.1002  		# units are pS/um2
+maxq=14.349  		# units are pS/um2
+qhalfdis=216.65
+qsteep=79.4
+hpoint=minq+(maxq-minq)/(1+np.exp(-(dis-qhalfdis)/qsteep))
+
+plt.figure()
+plt.plot(dis,hpoint)
+

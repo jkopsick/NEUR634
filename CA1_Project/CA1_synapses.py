@@ -15,17 +15,14 @@ import spine_scale_list as ssl
 plt.ion()
 
 # Define some variables that will be utilized in the simulation
-EREST_ACT = -69e-3 #: Resting membrane potential
 RM_soma = 6.29013*1.25 # for somatic compartments RM (uniform)
-
 RM_end = 3.1916*1.25 # for non somatic compartments RM (uniform)
 RM_halfdist= 100.05
 RM_slope= 50.48
 CM = 1.0595e-6*1e4 # for somatic compartments CM (uniform)
 RA = 2.18 # for non somatic compartments RA (uniform)
-initVm = EREST_ACT
+initVm = -69e-3 #: Resting membrane potential
 E_leak = -69e-3
-
 libraryName = '/library'
 cell_path = '/library/CA1'
 
@@ -290,9 +287,11 @@ CA1_soma_Vm = CA1_tables[0][0]
 prim_ap_names = list(chain(*prim_ap_name_list))
 prim_ap_names_index = [j for j, n in enumerate(distList2[0]) if n in prim_ap_names]
 prim_ap_dist_list = [distList[x] for x in prim_ap_names_index]
+prim_ap_names = [nameList[x] for x in prim_ap_names_index] # ordered list of prim apical dend compartments
 
-# Choose 3 of the compartments along the primary apical dendrite to monitor voltage attenuation
-primApicalPlotListName = random.sample(prim_ap_names,3)
+# Choose 3 of the compartments along the primary apical dendrite to monitor voltage attenuation. Selective
+# dendrites were chosen at roughly 100 um, 225 um, and 350 um (furthest compartment on primary apical dend)
+primApicalPlotListName = [prim_ap_names[67], prim_ap_names[133], prim_ap_names[215]]
 indexforprimApicalPlots = [x for x, n in enumerate(distList2[0]) if n in primApicalPlotListName]
 
 # Choose voltage tables for apical dendrites you are interested in recording from
@@ -330,5 +329,6 @@ plt.plot(t,CA1_soma_Vm.vector * 1e3, 'r',label = 'CA1_soma_Vm (mV)')
 plt.plot(t,primApicalPlotTables[0].vector * 1e3, 'k',label = primApicalPlotTableNames[0] + ' (mV)')
 plt.plot(t,primApicalPlotTables[1].vector * 1e3, 'b',label = primApicalPlotTableNames[1] + ' (mV)')
 plt.plot(t,primApicalPlotTables[2].vector * 1e3, 'g',label = primApicalPlotTableNames[2] + ' (mV)')
-plt.xlabel('time (ms)')
+plt.xlabel('Time (ms)')
+plt.ylabel('Voltage (mV)')
 plt.legend()

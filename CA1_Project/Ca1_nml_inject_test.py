@@ -15,19 +15,22 @@ import spine_scale_list as ssl
 plt.ion()
 
 # Define some variables that will be utilized in the simulation
-EREST_ACT = -64.5e-3 #: Resting membrane potential
-RM_soma = 6.29013*1.25 # for somatic compartments RM (uniform)
-
-RM_end = 3.1916*1.25 # for non somatic compartments RM (uniform)
+RM_soma = 6.29013 # for somatic compartments RM (uniform)
+RM_end = 3.1916 # for non somatic compartments RM (uniform)
 RM_halfdist= 100.05
 RM_slope= 50.48
 CM = 1.0595e-6*1e4 # for somatic compartments CM (uniform)
 RA = 2.18 # for non somatic compartments RA (uniform)
-initVm = EREST_ACT
+initVm = -62e-3 #: Resting membrane potential
 E_leak = -69e-3
-
 libraryName = '/library'
 cell_path = '/library/CA1'
+
+# Set the parameters for the pulse applied to the soma (in non-synapse experiments)
+pulse_dur = 400e-3
+pulse_amp = -50e-12
+pulse_delay1 = 30e-3
+pulse_delay2 = 1e9
 
 # Read in the CA1 cell morphology
 filename = 'CA1_nrn_morph_nobiophys.xml'
@@ -50,33 +53,11 @@ soma_center = [soma_xloc, soma_yloc, soma_zloc]
 # loaded in
 u.createChanLib(libraryName,chan_set,rateParams,CaParams=None)
 
-# Set of conductances that are being placed non-uniformly but in a discrete fashion for the different
-# compartment types in the CA1 morphology. Values have been multipled to reflect conversion from
-# physiological to SI units
-cond_set = {'Na' : {'soma' : 0e-3*1e4, 'dend' : 0e-3*1e4, 'apical' : 0e-3*1e4}, 
-	    'K' : {'soma' : 0e-3*1e4, 'dend' : 0e-3*1e4, 'apical' : 0e-3*1e4}}
-
 cond_set_test = {'HCN' : 0e-12*1e12}
 minq=2.1582  		# units are pS/um2
 maxq=1.5969  		# units are pS/um2
 qhalfdist=98.753
 qslope=50.07
-
-# Set the parameters for the pulse applied to the soma (in non-synapse experiments)
-pulse_dur = 400e-3
-pulse_amp = -30e-12
-pulse_delay1 = 30e-3
-pulse_delay2 = 1e9
-
-# Define a dictionary for the excitatory synapse channel type (AMPA) based off of information 
-# provided in Golding et al. Figure 6
-glu = {'name': 'glu', 'Gbar' : 0.1e-9, 'tau1' : 0.5e-3, 'tau2' : 5e-3, 'erev' : 0}
-
-# Create a loop that will create N many pre-synaptic neurons and places them into a dictionary
-N = 40
-dict = {}
-for i in range(1,N+1):
-    dict[i] = {'name': 'presyn_' + str(i), 'rate' : 1, 'refractT' : 1e-3, 'delay' : 5e-3}
 
 # Define the variables needed to view the undelying curves for the channel kinetics
 plot_powers = True
@@ -255,28 +236,6 @@ for comp in list(chain(*thin_LM_name_list)):
 	chan = moose.element(comp.path + '/' + chan)
         u.scaleChannelCond(chan = chan, scaling_factor = ssl.scale_factors['thin_LM_spine_scale'])
 
-# Create a list of lists of all names that are not a part of any spine scaling list
-no_spine_name_list2 = []
-for comp in distList2[0]:
-    if comp not in chain(list(chain(*no_spine_name_list)),
-			 list(chain(*basal_name_list)),
-			 list(chain(*med_spine_rad_name_list)),
-			 list(chain(*med_spine_LM_name_list)),
-			 list(chain(*max_spine_rad_name_list)),
-			 list(chain(*thin_rad_name_list)),
-			 list(chain(*thin_LM_name_list))):
-        no_spine_name_list2.append(comp)
-
-# Get all the distances associated with the primary apical dendritic tree to be used later for setting up
-# synapses and measuring voltage attenuation
-prim_ap_names = list(chain(*prim_ap_name_list))
-prim_ap_names_index = [j for j, n in enumerate(distList2[0]) if n in prim_ap_names]
-prim_ap_dist_list = [distList[x] for x in prim_ap_names_index]
-
-# Choose 3 of the compartments along the primary apical dendrite to monitor voltage attenuation
-synPlotListName = random.sample(prim_ap_names,3)
-indexforSynPlots = [x for x, n in enumerate(distList2[0]) if n in synPlotListName]
-
 # Create the pulse and apply it to the granule cell's soma
 CA1_soma_pulse = u.createPulse(CA1_cell[0], 'rollingWave', pulse_dur, pulse_amp, 
                            pulse_delay1, pulse_delay2)
@@ -290,26 +249,38 @@ for comp in CA1_cell:
 # Create a variable to store the voltage table generated for the soma to be used in the plot
 CA1_soma_Vm = CA1_tables[0][0]
 
+# Get all the distances associated with the primary apical dendritic tree to be used later for setting up
+# synapses and measuring voltage attenuation
+prim_ap_names = list(chain(*prim_ap_name_list))
+prim_ap_names_index = [j for j, n in enumerate(distList2[0]) if n in prim_ap_names]
+prim_ap_dist_list = [distList[x] for x in prim_ap_names_index]
+prim_ap_names = [nameList[x] for x in prim_ap_names_index] # ordered list of prim apical dend compartments
+
+# Choose 3 of the compartments along the primary apical dendrite to monitor voltage attenuation. Selective
+# dendrites were chosen at roughly 100 um, 225 um, and 350 um (furthest compartment on primary apical dend)
+primApicalPlotListName = [prim_ap_names[67], prim_ap_names[133], prim_ap_names[215]]
+indexforprimApicalPlots = [x for x, n in enumerate(distList2[0]) if n in primApicalPlotListName]
+
 # Choose voltage tables for apical dendrites you are interested in recording from
-synPlotTables = []
-for i in indexforSynPlots:
+primApicalPlotTables = []
+for i in indexforprimApicalPlots:
     table = CA1_tables[i][0] 
-    synPlotTables.append(table)
+    primApicalPlotTables.append(table)
 
 # Retrieve the names and put them in a format that allows for them to be labeled neatly when plotting
-synPlotTableNames = []
-for i in indexforSynPlots:
+primApicalPlotTableNames = []
+for i in indexforprimApicalPlots:
     path = CA1_tables[i][0].path
     path = path.split('/')[-1]
     path = path.strip(']')
     path = path.replace('[','')
     path = path[:-1] # remove trailing zero from the name of the voltage table
-    synPlotTableNames.append(path)
+    primApicalPlotTableNames.append(path)
 
 # Plot the simulation
 simTimenonSyn = 600e-3 # simulation time for non-synapse simulations
-simdt = 25e-6
-plotdt = 0.2e-3
+simdt = 10e-6
+plotdt = 0.1e-3
 for i in range(10):
     moose.setClock(i, simdt)
 
@@ -322,40 +293,9 @@ moose.start(simTimenonSyn)
 plt.figure()
 t = np.linspace(0,simTimenonSyn,len(CA1_soma_Vm.vector))
 plt.plot(t,CA1_soma_Vm.vector * 1e3, 'r',label = 'CA1_soma_Vm (mV)')
-plt.plot(t,synPlotTables[0].vector * 1e3, 'k',label = synPlotTableNames[0] + ' (mV)')
-plt.plot(t,synPlotTables[1].vector * 1e3, 'b',label = synPlotTableNames[1] + ' (mV)')
-plt.plot(t,synPlotTables[2].vector * 1e3, 'g',label = synPlotTableNames[2] + ' (mV)')
-plt.xlabel('time (ms)')
+plt.plot(t,primApicalPlotTables[0].vector * 1e3, 'k',label = primApicalPlotTableNames[0] + ' (mV)')
+plt.plot(t,primApicalPlotTables[1].vector * 1e3, 'b',label = primApicalPlotTableNames[1] + ' (mV)')
+plt.plot(t,primApicalPlotTables[2].vector * 1e3, 'g',label = primApicalPlotTableNames[2] + ' (mV)')
+plt.xlabel('Time (ms)')
+plt.ylabel('Voltage (mV)')
 plt.legend()
-
-
-# Work around for now to implement non uniform conductance
-#for comp in nameList:
-#    comp = moose.element('/library/somaA/' + comp)
-#    dist, _ = u.get_dist_name(comp)
-#    for chan_name, cond in cond_set_test.items():
-#        SA = np.pi*comp.length*comp.diameter
-#        proto = moose.element(libraryName + '/' + chan_name)
-#        chan = moose.copy(proto, comp, chan_name)[0]
-#	dist = dist*1e6
-#	hpoint=minq+(maxq-minq)/(1+np.exp(-(dist-qhalfdis)/qsteep))
-#        chan.Gbar = hpoint*SA*1.54
-#        m = moose.connect(chan, 'channel', comp, 'channel')
-#	Hpoints.append(hpoint)
-#	Gbars.append(chan.Gbar)
-
-# Selecting 40 random AMPA synapses to implement that are in the distal apical dendrites
-
-# First create a list of the indexes that contain apical dendrites
-
-# create a new list that uses the indices of the apicalindexList to get a list of their values
-#apicaldistList =[distList[x] for x in apicalindexList]
-# find all apical dendrites that are between 242 and 390 um away from the soma
-#apicalpotentialsynList = [x for x in apicaldistList if (x >= 242e-6) & (x <=390e-6)]
-# get the index for these potential apical dendrites
-#apicalpotentialSynListIndex = [i for i, x in enumerate(distList2[1]) if x in apicalpotentialsynList]
-# get the names for these potential apical dendrites
-#apicalpotentialnameList = [nameList[x] for x in apicalpotentialSynListIndex]
-
-# pick 40 random values from this list
-#randsynList = random.sample(apicalpotentialnameList, N)

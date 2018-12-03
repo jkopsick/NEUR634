@@ -137,7 +137,7 @@ def setSpecificCompParametersNonUniform(comp,origin,RM_soma,RM_end,RM_halfdist,R
 
 # Function that will set up compartments with non uniform conductance
 def setNonUniformConductance(comp_list, cell_path, libraryName, condSet, minq, maxq, qhalfdist,
-			     qslope, origin):
+			     qslope, origin, sag):
     for comp in comp_list:
         comp = moose.element(cell_path + '/' + comp)
         dist, _ = get_dist_name_from_soma(comp, origin)
@@ -147,7 +147,7 @@ def setNonUniformConductance(comp_list, cell_path, libraryName, condSet, minq, m
             chan = moose.copy(proto, comp, chan_name)[0]
 	    dist = dist*1e6
 	    hpoint=minq+(maxq-minq)/(1+np.exp(-(dist-qhalfdist)/qslope))
-            chan.Gbar = hpoint*SA*0
+            chan.Gbar = hpoint*SA*sag
             m = moose.connect(chan, 'channel', comp, 'channel')
 
 # Function that will scale Rm and Cm for a compartment by some scaling factor
@@ -515,23 +515,3 @@ def show_output(soma_v_vec, dend_v_vec, t_vec, new_fig=True):
     plt.legend(soma_plot + dend_plot, ['soma', 'dend(0.5)'])
     plt.xlabel('time (ms)')
     plt.ylabel('mV')
-
-
-
-
-# Work in progress code for distance dependent conductance
-#if (dist_dep == True):
-#	    for comp in moose.wildcardFind(cell.path + '/' + '#[TYPE=' + comp_type + ']'):
-#	        distance = np.sqrt(comp.x*comp.x + comp.y*comp.y + comp.z*comp.z)
-#                for chan_name, cond in condSet.items():
-#		    for dist,cond in condSet.items():
-#		        if (dist[0] <= distance < dist[1]):                          
-#                            conductance = cond
-#		    addOneChan(library_name, chan_name, conductance, comp)   
-            # Add the calcium pool to each compartment in the cell if it has been specified
-#            if (CaPoolParams != None):
-#	        add_calcium(library_name, cell, CaPoolParams, comp_type)
-#	        for key in channelSet.keys():
-#	            if ("Ca" in key):
-#		        connect_cal2chan(channelSet[key].name, channelSet[key].chan_type, cell,
-#                    		         CaPoolParams.caName, comp_type)

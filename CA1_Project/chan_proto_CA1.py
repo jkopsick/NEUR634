@@ -38,7 +38,7 @@ Na_h_params= u.AlphaBetaChanParams(
 
 
 Na_param = u.ChannelSettings(Xpow = 3, Ypow = 1, Zpow = 0, 
-			     Erev = 55e-3, 
+			     Erev = 50e-3, 
 			     name = 'Na', Xparam = Na_m_params, 
                              Yparam = Na_h_params, Zparam = [],
                              chan_type = [])
@@ -63,10 +63,6 @@ K_param = u.ChannelSettings(Xpow = 1, Ypow = 0, Zpow = 0, Erev = -90e-3, name = 
 # HCN params taken from Golding et. al 2005 
 HCN_n_params = u.HCNParamSettings(alpha_0=0.00057*1e3, a=0.4, z=7, Vhalf=-81e-3,
 				  exp_temp = 33, sim_temp = 35, q10 = 4.5)
-
-
-
-
 
 HCN_param = u.ChannelSettings(Xpow = 1, Ypow = 0, Zpow = 0, Erev = -25e-3, name = 'HCN',
                               Xparam = HCN_n_params, Yparam = [], Zparam = [],
