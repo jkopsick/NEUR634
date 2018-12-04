@@ -6,18 +6,6 @@ import numpy as np
 import pylab as plt
 plt.ion()
 
-rmsoma=0.629013*100000
-rmend=0.31916*100000
-rmhalfdis=0.10005*1000
-rmsteep=0.5048*100
-dis = np.linspace(0,533,5001)
-rmpoint=rmend+(rmsoma-rmend)/(1+np.exp((dis-rmhalfdis)/rmsteep))
-#{ g_pas=1/(rmpoint/scale_spines) cm=Cm*scale_spines Ra=global_ra }
-
-plt.figure()
-plt.plot(dis,rmpoint)
-
-
 rmsoma2=6.29013
 rmend2=3.1916
 rmhalfdis2= 100.05
@@ -27,15 +15,19 @@ rmpoint2=rmend2+(rmsoma2-rmend2)/(1+np.exp((dis2-rmhalfdis2)/rmsteep2))
 
 plt.figure()
 plt.plot(dis2,rmpoint2)
+plt.xlabel('Distance from Soma (um)')
+plt.ylabel('Membrane Resistance (ohm/m^2)')
 
 minq=2.1582  		# units are pS/um2
 maxq=1.5969  		# units are pS/um2
 qhalfdis=98.753
 qsteep=50.07
-hpoint=minq+(maxq-minq)/(1+np.exp(-(dis-qhalfdis)/qsteep))
+hpoint=minq+(maxq-minq)/(1+np.exp(-(dis2-qhalfdis)/qsteep))
 
 plt.figure()
-plt.plot(dis,hpoint)
+plt.plot(dis2,hpoint)
+plt.xlabel('Distance from Soma (um)')
+plt.ylabel('Ih Conductance (S/m^2)')
 
 rmsoma3= 7.4697
 rmend3=1.0216
@@ -46,7 +38,8 @@ rmpoint3=rmend3+(rmsoma3-rmend3)/(1+np.exp((dis3-rmhalfdis3)/rmsteep3))
 
 plt.figure()
 plt.plot(dis3,rmpoint3)
-
+plt.xlabel('Distance from Soma (um)')
+plt.ylabel('Membrane Resistance (ohm/m^2)')
 
 minq=0.1002  		# units are pS/um2
 maxq=14.349  		# units are pS/um2
@@ -55,5 +48,6 @@ qsteep=79.4
 hpoint=minq+(maxq-minq)/(1+np.exp(-(dis3-qhalfdis)/qsteep))
 
 plt.figure()
-plt.plot(dis,hpoint)
-
+plt.plot(dis3,hpoint)
+plt.xlabel('Distance from Soma (um)')
+plt.ylabel('Ih Conductance (S/m^2)')
