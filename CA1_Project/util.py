@@ -294,9 +294,6 @@ def createChanProto(libraryName, channelParams, rateParams, CaParams = None):
 
 	xGate.tableA = inf_x /tau_x
 	xGate.tableB = 1 / tau_x
-	print xGate.tableA
-	print xGate.tableB
-	print channelParams.Xpow
     
     # Define the inactivation gating kinetics if they exist    
     if channel.Ypower > 0:
