@@ -25,16 +25,16 @@ RM_halfdist= 100.05
 RM_slope= 50.48
 CM = 1.0595e-6*1e4 # for somatic compartments CM (uniform)
 RA = 2.18 # for non somatic compartments RA (uniform)
-sag_cond = 1.9359 # sag conductance multiplier as used in NEURON simulation for HCN on
-#sag_cond = 0 # sag conductance multiplier as used in NEURON simulation for HCN off
-initVm = -64.5e-3 #: Resting membrane potential
+#sag_cond = 1.9359 # sag conductance multiplier as used in NEURON simulation for HCN on
+sag_cond = 0 # sag conductance multiplier as used in NEURON simulation for HCN off
+initVm = -69e-3 #: Resting membrane potential
 E_leak = -69e-3
 libraryName = '/library'
 cell_path = '/library/CA1'
 
 # Set the parameters for the pulse applied to the soma (in non-synapse experiments)
 pulse_dur = 400e-3
-pulse_amp = -50e-12
+pulse_amp = -30e-12
 pulse_delay1 = 30e-3
 pulse_delay2 = 1e9
 
@@ -298,9 +298,9 @@ plt.plot(t,CA1_soma_Vm.vector * 1e3, 'r',label = 'CA1_soma_Vm (mV)')
 plt.plot(t,primApicalPlotTables[0].vector * 1e3, 'k',label = primApicalPlotTableNames[0] + ' (mV)')
 plt.plot(t,primApicalPlotTables[1].vector * 1e3, 'b',label = primApicalPlotTableNames[1] + ' (mV)')
 plt.plot(t,primApicalPlotTables[2].vector * 1e3, 'g',label = primApicalPlotTableNames[2] + ' (mV)')
-plt.xlabel('Time (sec)')
-plt.ylabel('Voltage (mV)')
-plt.legend()
+plt.xlabel('Time (sec)', fontsize = 40)
+plt.ylabel('Voltage (mV)', fontsize = 40)
+plt.legend(prop={'size':16})
 
 # End simulation time and calculate time elapsed
 end = time.time()

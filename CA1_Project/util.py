@@ -268,7 +268,6 @@ def createChanProto(libraryName, channelParams, rateParams, CaParams = None):
     if channel.Xpower > 0 and 'HCN' not in channelParams.name :
         xGate = moose.HHGate(channel.path + '/' + 'gateX')
         xGate.setupAlpha(channelParams.Xparam + rateParams)
-	print channelParams.Xpow
 
     # Define custom activation gating kinetics if they exist (Hyperpolarized channel kinetics)
     if channel.Xpower > 0 and 'HCN' in channelParams.name :
