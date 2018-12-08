@@ -35,7 +35,7 @@ cell_path = '/library/CA1'
 
 # Set the parameters for the pulse applied to the soma (in non-synapse experiments)
 pulse_dur = 400e-3
-pulse_amp = 0.25e-9
+pulse_amp = -50e-12
 pulse_delay1 = 30e-3
 pulse_delay2 = 1e9
 
@@ -61,7 +61,7 @@ soma_center = [soma_xloc, soma_yloc, soma_zloc]
 u.createChanLib(libraryName,chan_set,rateParams,CaParams=None)
 
 # Declare maximal conductances for the classic HH Na and K Channels which will be placed in the soma
-cond_set = {'Na' : 2000*5, 'K' : 350*5}
+cond_set = {'Na' : 2000*0, 'K' : 350*0}
 
 cond_set_test = {'HCN' : 0e-12*1e12}
 minq=0.1002  		# units are pS/um2
