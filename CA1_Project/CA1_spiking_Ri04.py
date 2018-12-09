@@ -332,9 +332,9 @@ plt.plot(t,CA1_soma_Vm.vector * 1e3, 'r',label = 'CA1_soma_Vm (mV)')
 plt.plot(t,primApicalPlotTables[0].vector * 1e3, 'k',label = primApicalPlotTableNames[0] + ' (mV)')
 plt.plot(t,primApicalPlotTables[1].vector * 1e3, 'b',label = primApicalPlotTableNames[1] + ' (mV)')
 plt.plot(t,primApicalPlotTables[2].vector * 1e3, 'g',label = primApicalPlotTableNames[2] + ' (mV)')
-plt.xlabel('Time (sec)')
-plt.ylabel('Voltage (mV)')
-plt.legend()
+plt.xlabel('Time (sec)', fontsize = 40)
+plt.ylabel('Voltage (mV)', fontsize = 40)
+plt.legend(prop={'size':16})
 
 # End simulation time and calculate time elapsed
 end = time.time()
