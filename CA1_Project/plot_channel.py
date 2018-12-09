@@ -14,7 +14,7 @@ def plot_gate_params(chan,plotpow, VMIN=-0.1, VMAX=0.05, CAMIN=0, CAMAX=1):
             axes[2].set_xlabel('Calcium')
         else:
             fig,axes=plt.subplots(2,cols,sharex=True)
-            axes[1].set_xlabel('voltage')
+            axes[1].set_xlabel('voltage', fontsize = 40)
         plt.suptitle(chan.name)
         if chan.Xpower > 0:
             gate=moose.element(chan.path + '/gateX')
@@ -54,8 +54,8 @@ def plot_gate_params(chan,plotpow, VMIN=-0.1, VMAX=0.05, CAMIN=0, CAMAX=1):
                 axes[2].plot(xarray,1/zb,label='ztau ' + chan.name)
                 axes[2].plot(xarray, za / zb, label='zinf ' + chan.name)
                 axes[2].legend(loc='best', fontsize=8)
-        axes[0].set_ylabel('tau, ms')
-        axes[1].set_ylabel('steady state')
+        axes[0].set_ylabel('tau, ms', fontsize = 40)
+        axes[1].set_ylabel('steady state', fontsize = 40)
         axes[0].legend(loc='best', fontsize=8)
         axes[1].legend(loc='best', fontsize=8)
     else:  #Must be two-D tab channel

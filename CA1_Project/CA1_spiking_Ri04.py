@@ -1,3 +1,7 @@
+# This script will simulate spiking for the Ri04 neuron. To test treatment conditions (no HCN), set 
+# initVm = -69e-3 and sag_cond = 0. To test control conditions (HCN present), set initVm to -62e-3 and
+# sag_cond = 1.9359. 
+
 # Import necessary libraries to perform the experiment and plot results
 import moose
 import pylab as plt
@@ -7,27 +11,33 @@ import plot_channel as pc
 import random # to create random synapses to connect randSpikes to
 import copy # to create n copies of the synapse dictionary
 from itertools import chain # allow for checking of multiple lists at a time
-from chan_proto_part1 import chan_set, rateParams
+from chan_proto_CA1 import chan_set, rateParams
 from moose.neuroml.NeuroML import NeuroML
-import spine_scale_list as ssl
+import Ri04_spine_scale_list as ssl
+import time # track time of the simulationm
+
+# Start recording time
+start = time.time()
 
 # Allow for each figure created in the simulation to be shown without a plt.show
 plt.ion()
 
 # Define some variables that will be utilized in the simulation
-RM_soma = 6.29013*1.25 # for somatic compartments RM (uniform)
-RM_end = 3.1916*1.25 # for non somatic compartments RM (uniform)
+RM_soma = 6.29013 # for somatic compartments RM (uniform)
+RM_end = 3.1916 # for non somatic compartments RM (uniform)
 RM_halfdist= 100.05
 RM_slope= 50.48
 CM = 1.0595e-6*1e4 # for somatic compartments CM (uniform)
 RA = 2.18 # for non somatic compartments RA (uniform)
-initVm = -69e-3 #: Resting membrane potential
+sag_cond = 1.9359 # sag conductance multiplier as used in NEURON simulation for HCN on
+#sag_cond = 0 # sag conductance multiplier as used in NEURON simulation for HCN off
+initVm = -62e-3 #: Resting membrane potential
 E_leak = -69e-3
 libraryName = '/library'
 cell_path = '/library/CA1'
 
 # Read in the CA1 cell morphology
-filename = 'CA1_nrn_morph_nobiophys.xml'
+filename = 'CA1_nrn_morph_nobiophys_Ri04.xml'
 neuromlR = NeuroML()
 neuromlR.readNeuroMLFromFile(filename)
 
@@ -47,12 +57,10 @@ soma_center = [soma_xloc, soma_yloc, soma_zloc]
 # loaded in
 u.createChanLib(libraryName,chan_set,rateParams,CaParams=None)
 
-# Set of conductances that are being placed non-uniformly but in a discrete fashion for the different
-# compartment types in the CA1 morphology. Values have been multipled to reflect conversion from
-# physiological to SI units
-cond_set = {'Na' : {'soma' : 0e-3*1e4, 'dend' : 0e-3*1e4, 'apical' : 0e-3*1e4}, 
-	    'K' : {'soma' : 0e-3*1e4, 'dend' : 0e-3*1e4, 'apical' : 0e-3*1e4}}
+# Declare maximal conductances for the Na and K Channels which will be placed in the soma
+cond_set = {'Na' : 2000*5, 'K' : 350*5}
 
+# Declare maximal conductance for the HCN channel, along with the parameters for the non-uniform Gh equation
 cond_set_test = {'HCN' : 0e-12*1e12}
 minq=2.1582  		# units are pS/um2
 maxq=1.5969  		# units are pS/um2
@@ -61,29 +69,17 @@ qslope=50.07
 
 # Define a dictionary for the excitatory synapse channel type (AMPA) based off of information 
 # provided in Golding et al. Figure 6
-glu = {'name': 'glu', 'Gbar' : 0.1e-9, 'tau1' : 0.5e-3, 'tau2' : 5e-3, 'erev' : 0}
+AMPA = {'name': 'AMPA', 'Gbar' : 10e-9, 'tau1' : 0.5e-3, 'tau2' : 5e-3, 'erev' : 0e-3}
 
-# Create a loop that will create N many pre-synaptic neurons and places them into a dictionary
-N = 40
+# Create a loop that will create a dictionary of parameters which will be used to create
+# N many pre-synaptic neurons
+N = 200
 dict = {}
 for i in range(1,N+1):
-    dict[i] = {'name': 'presyn_' + str(i), 'rate' : 1, 'refractT' : 1e-3, 'delay' : 5e-3}
+    dict[i] = {'syn_num' : i, 'name': 'presyn_' + str(i), 'rate' : 20, 'refractT' : 1e-3, 'delay' : 5e-3}
 
-# Define the variables needed to view the undelying curves for the channel kinetics
-plot_powers = True
-VMIN = -120e-3
-VMAX = 50e-3
-CAMIN = 0.01e-3
-CAMAX = 40e-3
-channelList = ('Na', 'K', 'HCN')
-
-# Graph the curves
-for chan in channelList:
-        libchan=moose.element(libraryName + '/' + chan)
-        pc.plot_gate_params(libchan,plot_powers, VMIN, VMAX, CAMIN, CAMAX)
-
-# Acquire the distance and the name of each compartment relative to the origin, and place them into
-# a list to be used in the distance-dependent conductance. Origin is close to the soma (soma is 4 um away)
+# Acquire the distance and the name of each compartment relative to the center soma compartment, and place 
+# them into a list to be used in the distance-dependent conductance.
 nameList = []
 distList = []
 
@@ -96,7 +92,7 @@ distList2 = []
 distList2.append(nameList)
 distList2.append(distList)
 
-# Implement non-uniform membrane resistances and conductances for each compartment
+# Implement non-uniform membrane resistance for each compartment
 for comp in distList2[0]:
     comp = moose.element(cell_path + '/' + comp)
     u.setSpecificCompParametersNonUniform(comp = comp, origin = soma_center,
@@ -104,10 +100,10 @@ for comp in distList2[0]:
 					  RM_halfdist = RM_halfdist, RM_slope = RM_slope,
 					  CM = CM, RA = RA, initVm = initVm, E_leak = E_leak)
 
-# Implement non-uniform membrane conductances for each compartment
+# Implement non-uniform membrane conductance for each compartment
 u.setNonUniformConductance(comp_list = distList2[0], cell_path = cell_path, libraryName = libraryName,
 			   condSet = cond_set_test, minq = minq, maxq = maxq, qhalfdist = qhalfdist,
-			   qslope = qslope, origin = soma_center)
+			   qslope = qslope, origin = soma_center, sag = sag_cond)
 
 # Create a list of lists of all compartments that are a part of the primary apical dendrite
 prim_ap_name_list = []
@@ -118,6 +114,12 @@ for i in reversed(ssl.prim_apical):
     names = [comp_names[x] for x in name_index]
     prim_ap_name_list.append(names)
     comp_names = [x for x in comp_names if x not in names]
+
+# Add Na and K channels to somatic compartments
+soma_list = prim_ap_name_list[-1]
+for comp in soma_list:
+    comp = moose.element(cell_path + '/' + comp)
+    u.addChanList(libraryName, cond_set, comp)
 
 # Create a list of list of all the names that have no spine scaling, and then scale all of the compartments
 # Rm, Cm, and Gbar by the spine scaling factor associated with them
@@ -251,8 +253,8 @@ SLM_names = list(chain(list(chain(*med_spine_LM_name_list)), list(chain(*thin_LM
 SLM_names_index = [j for j, n in enumerate(distList2[0]) if n in SLM_names]
 SLM_dist_list = [distList[x] for x in SLM_names_index]
 
-# find all SLM dendritic compartments that are between 242 and 390 um away from the soma
-SLM_potential_syn_list = [x for x in SLM_dist_list if (x >= 242e-6) & (x <=390e-6)]
+# find all SLM dendritic compartments that are between 350 and 450 um away from the soma
+SLM_potential_syn_list = [x for x in SLM_dist_list if (x >= 350e-6) & (x <=450e-6)]
 # get the index for these potential SLM dendritic compartments
 SLM_potential_syn_list_index = [i for i, x in enumerate(distList2[1]) if x in SLM_potential_syn_list]
 # get the names for these potential SLM dendritic compartments
@@ -261,17 +263,17 @@ SLM_potential_syn_name_list = [nameList[x] for x in SLM_potential_syn_list_index
 # pick 40 random values from this list
 randsynList = random.sample(SLM_potential_syn_name_list, N)
 
-# Add AMPA synapses to each of these random compartments along the apical tree
+# Add AMPA synapses to each of these random SLM compartments
 synapseHandler = []
 for comp in randsynList:
-    apical = moose.element(cell_path + '/' + comp)
-    sh = u.addSynChan(apical, glu)
+    slm = moose.element(cell_path + '/' + comp)
+    sh = u.addSynChan(slm, AMPA)
     synapseHandler.append(sh)
 
 # Connect the presynaptic neuron to each synapse
 for i in dict.values():
-    for handle in synapseHandler:
-        presyncell = u.createRandSpike(i, handle)
+	shnum = i['syn_num'] - 1 # get the correct index to be used for the synapseHandler
+        presyncell = u.createRandSpike(i, synapseHandler[shnum])
 
 # Create a neutral object to store the data in
 CA1_data = moose.Neutral('/CA1_data')
@@ -279,12 +281,12 @@ CA1_tables = []
 for comp in CA1_cell:
     CA1_tables.append(u.createDataTables(compname = comp, data_hierarchy = CA1_data))
 
-# Create a variable to store the voltage table generated for the soma to be used in the plot
+# Create a variable to store the voltage table generated for the central somatic compartment 
+# to be used in the plot
 CA1_soma_Vm = CA1_tables[0][0]
 
-# Get all the distances associated with the primary apical dendritic tree to be used later for setting up
-# synapses and measuring voltage attenuation
-prim_ap_names = list(chain(*prim_ap_name_list))
+# Get all the distances and names associated with the primary apical dendritic tree
+prim_ap_names = list(chain(*prim_ap_name_list)) # unordered list of prim apical dendrite compartments
 prim_ap_names_index = [j for j, n in enumerate(distList2[0]) if n in prim_ap_names]
 prim_ap_dist_list = [distList[x] for x in prim_ap_names_index]
 prim_ap_names = [nameList[x] for x in prim_ap_names_index] # ordered list of prim apical dend compartments
@@ -294,7 +296,7 @@ prim_ap_names = [nameList[x] for x in prim_ap_names_index] # ordered list of pri
 primApicalPlotListName = [prim_ap_names[67], prim_ap_names[133], prim_ap_names[215]]
 indexforprimApicalPlots = [x for x, n in enumerate(distList2[0]) if n in primApicalPlotListName]
 
-# Choose voltage tables for apical dendrites you are interested in recording from
+# Get the voltage tables for the three representative apical dendritic compartments
 primApicalPlotTables = []
 for i in indexforprimApicalPlots:
     table = CA1_tables[i][0] 
@@ -310,8 +312,8 @@ for i in indexforprimApicalPlots:
     path = path[:-1] # remove trailing zero from the name of the voltage table
     primApicalPlotTableNames.append(path)
 
-# Plot the simulation
-simTime = 100e-3 # simulation time for non-synapse simulations
+# Define variables to be used for the simulation
+simTime = 1000e-3
 simdt = 10e-6
 plotdt = 0.1e-3
 for i in range(10):
@@ -319,7 +321,8 @@ for i in range(10):
 
 moose.setClock(8, plotdt)
 
-# Use the hsolve method for the experiment
+# Use the hsolve method and run the simulation, and then plot the results for the soma and representative
+# primary apical dendritic compartments
 u.hsolve(CA1_cell[0], simdt)
 moose.reinit()
 moose.start(simTime)
@@ -329,6 +332,11 @@ plt.plot(t,CA1_soma_Vm.vector * 1e3, 'r',label = 'CA1_soma_Vm (mV)')
 plt.plot(t,primApicalPlotTables[0].vector * 1e3, 'k',label = primApicalPlotTableNames[0] + ' (mV)')
 plt.plot(t,primApicalPlotTables[1].vector * 1e3, 'b',label = primApicalPlotTableNames[1] + ' (mV)')
 plt.plot(t,primApicalPlotTables[2].vector * 1e3, 'g',label = primApicalPlotTableNames[2] + ' (mV)')
-plt.xlabel('Time (ms)')
+plt.xlabel('Time (sec)')
 plt.ylabel('Voltage (mV)')
 plt.legend()
+
+# End simulation time and calculate time elapsed
+end = time.time()
+time_elapsed = end - start
+print('Simulation Run Time', time.strftime("%H:%M:%S", time.gmtime(time_elapsed)))

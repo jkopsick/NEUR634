@@ -1,6 +1,5 @@
-# These gating kinetics look much better now, but will need to make sure that these are converted
-# properly into SI units, or since the mod file is defined in physiological units, would need
-# to convert the rest of the model into physiological units (not what I really want to do though)
+# This python script will generate plots for the HCN channel kinetics, and can be compared to the output
+# of moose_nerp plot_channel.py
 
 import numpy as np
 import pylab as plt

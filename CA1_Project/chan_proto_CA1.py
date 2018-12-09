@@ -1,6 +1,5 @@
 # This python file contains the necessary code to create all the channels necessary for
-# a compartment (in this case, a patch of the HH giant squid axon) and to load these channels
-# into a library in MOOSE
+# a compartment and to load these channels into a library in MOOSE
 
 import moose
 import util as u

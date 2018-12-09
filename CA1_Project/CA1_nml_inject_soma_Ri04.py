@@ -1,3 +1,7 @@
+# This script will simulate somatic injection for the Ri04 neuron. To test treatment conditions (no HCN), set 
+# initVm = -69e-3 and sag_cond = 0. To test control conditions (HCN present), set initVm to -62e-3 and
+# sag_cond = 1.9359. 
+
 # Import necessary libraries to perform the experiment and plot results
 import moose
 import pylab as plt
@@ -32,7 +36,7 @@ E_leak = -69e-3
 libraryName = '/library'
 cell_path = '/library/CA1'
 
-# Set the parameters for the pulse applied to the soma (in non-synapse experiments)
+# Set the parameters for the pulse applied to the soma
 pulse_dur = 400e-3
 pulse_amp = -30e-12
 pulse_delay1 = 30e-3
@@ -59,17 +63,18 @@ soma_center = [soma_xloc, soma_yloc, soma_zloc]
 # loaded in
 u.createChanLib(libraryName,chan_set,rateParams,CaParams=None)
 
-# Declare maximal conductances for the classic HH Na and K Channels which will be placed in the soma
+# Declare maximal conductances for the Na and K Channels which will be placed in the soma
 cond_set = {'Na' : 2000*0, 'K' : 350*0}
 
+# Declare maximal conductance for the HCN channel, along with the parameters for the non-uniform Gh equation
 cond_set_test = {'HCN' : 0e-12*1e12}
 minq=2.1582  		# units are pS/um2
 maxq=1.5969  		# units are pS/um2
 qhalfdist=98.753
 qslope=50.07
 
-# Acquire the distance and the name of each compartment relative to the origin, and place them into
-# a list to be used in the distance-dependent conductance. Origin is close to the soma (soma is 4 um away)
+# Acquire the distance and the name of each compartment relative to the center soma compartment, and place 
+# them into a list to be used in the distance-dependent conductance.
 nameList = []
 distList = []
 
@@ -82,7 +87,7 @@ distList2 = []
 distList2.append(nameList)
 distList2.append(distList)
 
-# Implement non-uniform membrane resistances and conductances for each compartment
+# Implement non-uniform membrane resistance for each compartment
 for comp in distList2[0]:
     comp = moose.element(cell_path + '/' + comp)
     u.setSpecificCompParametersNonUniform(comp = comp, origin = soma_center,
@@ -90,7 +95,7 @@ for comp in distList2[0]:
 					  RM_halfdist = RM_halfdist, RM_slope = RM_slope,
 					  CM = CM, RA = RA, initVm = initVm, E_leak = E_leak)
 
-# Implement non-uniform membrane conductances for each compartment
+# Implement non-uniform membrane conductance for each compartment
 u.setNonUniformConductance(comp_list = distList2[0], cell_path = cell_path, libraryName = libraryName,
 			   condSet = cond_set_test, minq = minq, maxq = maxq, qhalfdist = qhalfdist,
 			   qslope = qslope, origin = soma_center, sag = sag_cond)
@@ -105,7 +110,7 @@ for i in reversed(ssl.prim_apical):
     prim_ap_name_list.append(names)
     comp_names = [x for x in comp_names if x not in names]
 
-# Add HH Na and K channels to somatic compartments
+# Add Na and K channels to somatic compartments
 soma_list = prim_ap_name_list[-1]
 for comp in soma_list:
     comp = moose.element(cell_path + '/' + comp)
@@ -238,7 +243,7 @@ for comp in list(chain(*thin_LM_name_list)):
 	chan = moose.element(comp.path + '/' + chan)
         u.scaleChannelCond(chan = chan, scaling_factor = ssl.scale_factors['thin_LM_spine_scale'])
 
-# Create the pulse and apply it to the granule cell's soma
+# Create the pulse and apply it to the CA1 cell's central somatic compartment
 CA1_soma_pulse = u.createPulse(CA1_cell[0], 'rollingWave', pulse_dur, pulse_amp, 
                            pulse_delay1, pulse_delay2)
 
@@ -248,11 +253,11 @@ CA1_tables = []
 for comp in CA1_cell:
     CA1_tables.append(u.createDataTables(comp,CA1_data,CA1_soma_pulse))
 
-# Create a variable to store the voltage table generated for the soma to be used in the plot
+# Create a variable to store the voltage table generated for the central somatic compartment 
+# to be used in the plot
 CA1_soma_Vm = CA1_tables[0][0]
 
-# Get all the distances associated with the primary apical dendritic tree to be used later for setting up
-# synapses and measuring voltage attenuation
+# Get all the distances and names associated with the primary apical dendritic tree
 prim_ap_names = list(chain(*prim_ap_name_list))
 prim_ap_names_index = [j for j, n in enumerate(distList2[0]) if n in prim_ap_names]
 prim_ap_dist_list = [distList[x] for x in prim_ap_names_index]
@@ -263,7 +268,7 @@ prim_ap_names = [nameList[x] for x in prim_ap_names_index] # ordered list of pri
 primApicalPlotListName = [prim_ap_names[67], prim_ap_names[133], prim_ap_names[215]]
 indexforprimApicalPlots = [x for x, n in enumerate(distList2[0]) if n in primApicalPlotListName]
 
-# Choose voltage tables for apical dendrites you are interested in recording from
+# Get the voltage tables for the three representative apical dendritic compartments
 primApicalPlotTables = []
 for i in indexforprimApicalPlots:
     table = CA1_tables[i][0] 
@@ -279,8 +284,8 @@ for i in indexforprimApicalPlots:
     path = path[:-1] # remove trailing zero from the name of the voltage table
     primApicalPlotTableNames.append(path)
 
-# Plot the simulation
-simTimenonSyn = 600e-3 # simulation time for non-synapse simulations
+# Define variables to be used for the simulation
+simTimenonSyn = 600e-3 
 simdt = 10e-6
 plotdt = 0.1e-3
 for i in range(10):
@@ -288,7 +293,8 @@ for i in range(10):
 
 moose.setClock(8, plotdt)
 
-# Use the hsolve method for the experiment
+# Use the hsolve method and run the simulation, and then plot the results for the soma and representative
+# primary apical dendritic compartments
 u.hsolve(CA1_cell[0], simdt)
 moose.reinit()
 moose.start(simTimenonSyn)
